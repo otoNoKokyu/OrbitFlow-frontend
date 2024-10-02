@@ -1,0 +1,10 @@
+
+:root { box-sizing: border-box; }
+*, *::before, *::after, *::marker { box-sizing: inherit; }
+html, body {
+    min-height: 100vh;
+    min-width: 100%;
+    margin: 0;
+    padding: 0;
+    position: relative;
+}

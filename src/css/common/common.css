@@ -1,0 +1,15 @@
+.error-handler{
+    text-align: start;
+    margin-top: 5px;
+    margin-bottom: 5px;
+
+    color: red;
+    span{
+        margin-left:5px;
+        font-size: smaller;
+        svg{
+            margin-right: 10px;
+        }
+    }
+
+}

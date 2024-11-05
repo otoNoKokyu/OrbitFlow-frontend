@@ -4,11 +4,17 @@ import { LoginType } from '../../../common/interface/Auth/auth';
 import ErrorHandler from '../../../common/component/ErrorHandler';
 import { useAuth } from '../../../common/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 
 const Login = () => {
-    const {login} = useAuth()
+    const {login,user} = useAuth()
     const navigate = useNavigate()
+
+    useEffect(()=>{
+        if(user) navigate('/')
+    },[])
+
     const { register, handleSubmit, formState: { errors } } = useForm<LoginType>();
 
 

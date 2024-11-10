@@ -4,12 +4,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 type props =  {
  style? : CSSProperties;
- text: string;
+ text: string | undefined;
 }
-const ErrorHandler: FC<props> = ({style, text}) => {
-
+const ErrorHandler: FC<props> = ({text}) => {
+  if(!text) return null;
   return (
-    <div style={style?? {}} className="error-handler">
+    <div  className="error-handler">
       <span>
       <FontAwesomeIcon
         color={'red'}

@@ -5,6 +5,7 @@ import ErrorHandler from '../../../common/component/ErrorHandler';
 import { useAuth } from '../../../common/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import { validateEmail, validatePassword } from '../constants/auth.constant';
 
 
 const Login = () => {
@@ -17,18 +18,6 @@ const Login = () => {
 
     const { register, handleSubmit, formState: { errors } } = useForm<LoginType>();
 
-
-
-    const validateEmail = (val: string) => {
-        const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        return regex.test(val)
-    }
-
-    const validatePassword = (val: string) => {
-
-        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-        return regex.test(val)
-    }
     const onSubmit = (form: LoginType) => {
         login(form)
         navigate('/')   

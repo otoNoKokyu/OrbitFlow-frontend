@@ -12,19 +12,15 @@ type MyComponentType = {
 type Props = {
     title?: string;
     children: Array<MyComponentType>;
-    defaultValues: any
 };
 
-const MultipartForm: FC<Props> = ({ title, children,defaultValues }) => {
+const MultipartForm: FC<Props> = ({ title, children }) => {
     const [currentChildIndex, setCurrentChildIndex] = useState(0);
+    const [formAction, setFormAction] = useState('next');
     const [isIn, setIsIn] = useState(true);
     const nodeRef = useRef(null);
-    const methods = useForm<DefaultValues>();
+    const methods = useForm();
 
-    const onError = (error:any) => {
-        console.log(error)
-
-    }
     const changeFormSection = (type: 'next' | 'previous') => {
         setIsIn(false);
         setTimeout(() => {
@@ -34,50 +30,49 @@ const MultipartForm: FC<Props> = ({ title, children,defaultValues }) => {
             setIsIn(true);
         }, duration);
     };
-    const onSubmit = (formVal:typeof defaultValues) => {
-        console.log(formVal)
+    const onSubmit = (formVal: any) => {
+        if (isLastStep) {
+            console.log(formVal)
+            return
+        }
+        if (formAction === 'next') changeFormSection('next')
+        if (formAction === 'previous') changeFormSection('previous')
     }
+    const isLastStep = currentChildIndex === children.length-1
     const CurrentComponent = children[currentChildIndex].component
     return (
         <div className='form-container'>
             {title && <h1>{title}</h1>}
             <FormProvider {...methods}>
-                <form  onSubmit={methods.handleSubmit(onSubmit,onError)}>
+                <form onSubmit={methods.handleSubmit(onSubmit)}>
                     <Transition nodeRef={nodeRef} in={isIn} timeout={duration}>
                         {() => (
                             <>
-                                 {CurrentComponent(nodeRef, isIn ? 'tran-in' : 'tran-out')}
+                                {CurrentComponent(nodeRef, isIn ? 'tran-in' : 'tran-out')}
+
                             </>
                         )}
                     </Transition>
                     <div className='btn-container' style={{ display: 'flex', justifyContent: 'space-between' }}>
-                {children.length > 1 && <button
-                type='button'
-                    disabled={currentChildIndex === 0}
-                    onClick={() => {
-                        changeFormSection('previous');
-                    }}
-                >
-                    Previous
-                </button>}
-                {children.length > 1 && currentChildIndex < children.length-1 && <button
-                type='button'
-                    onClick={() => {                        
-                        changeFormSection('next');
-                    }}
-                >
-                    Next
-                </button>}
-                {currentChildIndex === children.length-1 && <button
-                    type={ 'submit'}
-                >
-                    Submit
-                </button>}
-            </div>
+                        {
+                            children.length > 1 && <button
+                                type='submit'
+                                disabled={currentChildIndex === 0}
+                                onClick={() => {
+                                    setFormAction('previous')
+                                }}
+                            >
+                                Previous
+                            </button>}
+                        {children.length > 1 && <button
+                            type='submit'
+                            onClick={() => {if(!isLastStep) setFormAction('next')}}
+                        >
+                            {isLastStep? 'submit': 'next'}
+                        </button>}
+                    </div>
                 </form>
             </FormProvider>
-
-
         </div>
     );
 };

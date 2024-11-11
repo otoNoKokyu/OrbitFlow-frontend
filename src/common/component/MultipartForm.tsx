@@ -46,10 +46,7 @@ const MultipartForm: FC<Props> = ({ title, children }) => {
                 <form onSubmit={methods.handleSubmit(onSubmit)}>
                     <Transition nodeRef={nodeRef} in={isIn} timeout={duration}>
                         {() => (
-                            <div className='active'>
-                                {CurrentComponent(nodeRef, isIn ? 'tran-in' : 'tran-out')}
-
-                            </div>
+                                CurrentComponent(nodeRef, isIn ? 'tran-in' : 'tran-out')
                         )}
                     </Transition>
                     <div className='btn-container' style={{ display: 'flex', justifyContent: 'space-between' }}>

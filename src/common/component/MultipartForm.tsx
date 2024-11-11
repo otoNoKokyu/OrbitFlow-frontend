@@ -35,8 +35,7 @@ const MultipartForm: FC<Props> = ({ title, children }) => {
             console.log(formVal)
             return
         }
-        if (formAction === 'next') changeFormSection('next')
-        if (formAction === 'previous') changeFormSection('previous')
+        changeFormSection('next')
     }
     const isLastStep = currentChildIndex === children.length-1
     const CurrentComponent = children[currentChildIndex].component
@@ -47,26 +46,25 @@ const MultipartForm: FC<Props> = ({ title, children }) => {
                 <form onSubmit={methods.handleSubmit(onSubmit)}>
                     <Transition nodeRef={nodeRef} in={isIn} timeout={duration}>
                         {() => (
-                            <>
+                            <div className='active'>
                                 {CurrentComponent(nodeRef, isIn ? 'tran-in' : 'tran-out')}
 
-                            </>
+                            </div>
                         )}
                     </Transition>
                     <div className='btn-container' style={{ display: 'flex', justifyContent: 'space-between' }}>
                         {
                             children.length > 1 && <button
-                                type='submit'
+                                type='button'
                                 disabled={currentChildIndex === 0}
                                 onClick={() => {
-                                    setFormAction('previous')
+                                    changeFormSection('previous')
                                 }}
                             >
                                 Previous
                             </button>}
                         {children.length > 1 && <button
                             type='submit'
-                            onClick={() => {if(!isLastStep) setFormAction('next')}}
                         >
                             {isLastStep? 'submit': 'next'}
                         </button>}

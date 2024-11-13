@@ -1,25 +1,30 @@
 import React, { ComponentType, FC, useEffect, useState } from 'react';
 import { Transition } from 'react-transition-group';
 import { useRef } from 'react';
-import { FormProvider, useForm } from 'react-hook-form';
+import { FieldValues, FormProvider, useForm } from 'react-hook-form';
 import { DefaultValues, IUser } from '../interface/Auth/auth';
+import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 const duration = 300;
 
 type MyComponentType = {
     component: (ref: React.RefObject<any>, className?: string) => JSX.Element;
 };
 
-type Props = {
+type Props<T> = {
     title?: string;
     children: Array<MyComponentType>;
+    saveFn: (data: T) => Promise<T | void>;
 };
 
-const MultipartForm: FC<Props> = ({ title, children }) => {
+const MultipartForm = <T,>({ title, children,saveFn }: Props<T>) => {
+    const {setUserMeta} = useAuth()
     const [currentChildIndex, setCurrentChildIndex] = useState(0);
     const [formAction, setFormAction] = useState('next');
     const [isIn, setIsIn] = useState(true);
     const nodeRef = useRef(null);
     const methods = useForm();
+    const navigate = useNavigate()
 
     const changeFormSection = (type: 'next' | 'previous') => {
         setIsIn(false);
@@ -30,10 +35,12 @@ const MultipartForm: FC<Props> = ({ title, children }) => {
             setIsIn(true);
         }, duration);
     };
-    const onSubmit = (formVal: any) => {
+    const onSubmit = async(formVal: any) => {
         if (isLastStep) {
-            console.log(formVal)
-            return
+            const data = await saveFn(formVal) as IUser
+            setUserMeta(data)
+            navigate('/login')
+            return 
         }
         changeFormSection('next')
     }
@@ -49,7 +56,7 @@ const MultipartForm: FC<Props> = ({ title, children }) => {
                                 CurrentComponent(nodeRef, isIn ? 'tran-in' : 'tran-out')
                         )}
                     </Transition>
-                    <div className='btn-container' style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <div className='btn-container' style={{ display: 'flex', justifyContent: 'space-between', marginTop:'100px' }}>
                         {
                             children.length > 1 && <button
                                 type='button'

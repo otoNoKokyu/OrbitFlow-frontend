@@ -18,28 +18,29 @@
             text-align: center;
             display: block;
         }
-
-        form{
-            input {
-                padding: 15px;
-                width: 100%;
-                border-radius: 6px;
-                outline: none;
-                border:1px solid rgb(151, 146, 146);
-        
-            }
-            input::placeholder{
-                color: black;
-                font-weight: bold;
-            }
-            
-        }
         .signup-common{
             width: 500px;
             height: 400px;
             padding: 20px;
             padding-right: 15px;
             transition: opacity 0.3s ease, transform 0.3s ease;
+
+            input {
+                padding: 15px;
+                width: 100%;
+                border-radius: 6px;
+                outline: none;
+                border:1px solid rgb(151, 146, 146);
+                
+        
+            }
+            input::placeholder{
+                color: black;
+                font-weight: bold;
+            }
+        .error{
+            border-color: red;
+        }
         }
         .name {
             display: flex;

@@ -3,9 +3,10 @@ export type LoginType = {
     password: string;
 }
 export interface ProviderProps {
-    user:  string ,
-    token:  string,
-    login: (data: LoginType ) => void,
+    user:  IUser,
+    tokens: Record<string,string>
+    setUserMeta: (data: IUser) => void,
+    login: (data: LoginType ) => Promise<boolean>,
     logout() :void,
 }
 enum RoleEnum {
@@ -37,9 +38,9 @@ export interface IUser {
   updated_at?: Date;
   last_login?: Date;
   is_active: boolean;
-  access_token?: string;
-  refresh_token?: string;
-  role: RoleEnum;
+  access_token: string;
+  refresh_token: string;
+  assigned_role: RoleEnum;
   isInvited?: boolean;
 }
 

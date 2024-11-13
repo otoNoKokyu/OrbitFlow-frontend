@@ -42,6 +42,15 @@ const SignupBasic = forwardRef<HTMLDivElement, { className?: string}>(({ classNa
                     />
                     <ErrorHandler text={errors.phone_number?.message} />
                 </div>
+                <div>
+                    <input
+                        {...register('password_hash', { required: 'password is required' })}
+                        type="password"
+                        placeholder="Password"
+                    />
+                    <ErrorHandler text={errors.password_hash?.message} />
+                </div>
+
 
                 <div>
                     <input

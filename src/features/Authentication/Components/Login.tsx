@@ -5,22 +5,23 @@ import ErrorHandler from '../../../common/component/ErrorHandler';
 import { useAuth } from '../../../common/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import { validateEmail, validatePassword } from '../constants/auth.constant';
+import { validateEmail } from '../constants/auth.constant';
 
 
 const Login = () => {
-    const {login,user} = useAuth()
+    const {login,user,tokens} = useAuth()
     const navigate = useNavigate()
 
     useEffect(()=>{
-        if(user) navigate('/')
+        if(user && tokens) navigate('/')
     },[])
 
     const { register, handleSubmit, formState: { errors } } = useForm<LoginType>();
 
-    const onSubmit = (form: LoginType) => {
-        login(form)
-        navigate('/')   
+    const onSubmit = async(form: LoginType) => {
+        await login(form)
+        navigate('/')
+
     }
 
     return (
@@ -39,7 +40,7 @@ const Login = () => {
                 {errors.email && <ErrorHandler text={'provide correct email'} />}
                 <div>
                     <input
-                        {...register('password', { required: 'Password is required', validate: validatePassword })}
+                        {...register('password', { required: 'Password is required' })}
                         type="text" placeholder='Enter your password' />
                 </div>
                 {errors.password && <ErrorHandler text={'provide correct password'} />}

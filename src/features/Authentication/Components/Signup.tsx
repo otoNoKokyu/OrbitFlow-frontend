@@ -1,32 +1,23 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import '../../../css/pages/signup.css'
 import MultipartForm from '../../../common/component/MultipartForm'
 import SignupBasic from '../Forms/Signup_Basic'
 import SignupAddress from '../Forms/Signup_Address'
 import { IUser } from '../../../common/interface/Auth/auth'
-
-const Signup:  React.FC  = () => {
-
-  const defaultValues = {
-    signupbasics: {
-        first_name: '',
-        last_name: '',
-        email: '',
-        phone_number: '',
-        date_of_birth: '',
-        username: '',
-    },
-    signupaddress: {
-        address: '',
-        city: '',
-        state: '',
-        zip_code: '',
-    },
-};
+import authService from '../service/auth.service'
+import { useAuth } from '../../../common/hooks/useAuth'
 
 type Child<T> = {
   component: (ref: React.RefObject<T>, className?: string) => JSX.Element;
 };
+const Signup:  React.FC  = () => {
+
+  const {logout} = useAuth()
+
+  useEffect(()=>{
+    logout()
+  },[])
+
   
     const children: Array<Child<HTMLDivElement| HTMLInputElement>> =  [
       {
@@ -43,7 +34,7 @@ type Child<T> = {
       <MultipartForm
       title='Orbitflow'
       children={children}
-      defaultValues={defaultValues}
+      saveFn = {authService.callRegister}
       />
     </div>
   )

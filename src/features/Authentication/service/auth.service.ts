@@ -1,32 +1,22 @@
-import { IUser, LoginType } from '../../../common/interface/Auth/auth'
-import axios from 'axios';
+import { IUser, LoginType } from '../../../common/types/Auth/auth'
+import { Instance } from '../../../interceptor/Instance';
 
 const authService = {
 
-    callRegister: async (payload: IUser):Promise<IUser| void> => {
-        try {
-            const response = await axios.post('http://localhost:3000/auth/signup', {...payload, isInvited:false, assigned_role: 'ADMIN'});
+    callRegister: async (payload: IUser):Promise<IUser> => {
+            const response = await Instance.post('/auth/signup', {...payload, isInvited:false, assigned_role: 'ADMIN'});
             if (response.status !== 201) throw Error('http status mismatch')
             const { data } = response
-            return data
-        } catch (error) {
-            console.error("Login failed", error);
-            
-        }
+            return data            
     },
     callLogin: async (data: LoginType) => {
-        try {
-            const response = await axios.post('http://localhost:3000/auth/signin', data);
+            const response = await Instance.post('/auth/signin', data);
             const tokenObj = response.data;
             return tokenObj;
-        } catch (error) {
-            console.error(error)
-        }
     },
     getUser: async (access_token: string): Promise<IUser|null> => {
-        try{
-            const meData = await axios({
-                url: 'http://localhost:3000/auth/me',
+            const meData = await Instance({
+                url: '/auth/me',
                 method: 'get',
                 headers: {
                     'authorization': `bearer ${access_token}`,
@@ -34,12 +24,6 @@ const authService = {
                 }
             })
             return meData.data;
-        }catch(error){
-            console.log(error)
-            return null
-        }
-
-
     }
 
 }

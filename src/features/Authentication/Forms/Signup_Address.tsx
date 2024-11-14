@@ -2,7 +2,7 @@ import React, { forwardRef } from 'react'
 import '../../../css/pages/signup.css'
 import classNames from 'classnames';
 import { useFormContext } from 'react-hook-form';
-import { DefaultValues, IUser } from '../../../common/interface/Auth/auth';
+import { DefaultValues, IUser } from '../../../common/types/Auth/auth';
 import ErrorHandler from '../../../common/component/ErrorHandler';
 
 const SignupAddress = forwardRef<HTMLDivElement, { className?: string }>(({ className }, ref) => { 

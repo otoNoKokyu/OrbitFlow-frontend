@@ -1,26 +1,16 @@
-import React, { ComponentType, FC, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Transition } from 'react-transition-group';
 import { useRef } from 'react';
-import { FieldValues, FormProvider, useForm } from 'react-hook-form';
-import { DefaultValues, IUser } from '../interface/Auth/auth';
-import { useAuth } from '../hooks/useAuth';
+import { FormProvider, useForm } from 'react-hook-form';
+import {StepperForm } from '../types/Auth/auth';
 import { useNavigate } from 'react-router-dom';
+
 const duration = 300;
 
-type MyComponentType = {
-    component: (ref: React.RefObject<any>, className?: string) => JSX.Element;
-};
 
-type Props<T> = {
-    title?: string;
-    children: Array<MyComponentType>;
-    saveFn: (data: T) => Promise<T | void>;
-};
 
-const MultipartForm = <T,>({ title, children,saveFn }: Props<T>) => {
-    const {setUserMeta} = useAuth()
+const MultistepForm = <T,>({ title, children,saveFn,redirectPath,setMetaFn }: StepperForm<T>) => {
     const [currentChildIndex, setCurrentChildIndex] = useState(0);
-    const [formAction, setFormAction] = useState('next');
     const [isIn, setIsIn] = useState(true);
     const nodeRef = useRef(null);
     const methods = useForm();
@@ -37,12 +27,10 @@ const MultipartForm = <T,>({ title, children,saveFn }: Props<T>) => {
     };
     const onSubmit = async(formVal: any) => {
         if (isLastStep) {
-            const data = await saveFn(formVal) as IUser
-            setUserMeta(data)
-            navigate('/login')
-            return 
-        }
-        changeFormSection('next')
+            const data = await saveFn(formVal)
+            setMetaFn?.(data)
+            navigate(redirectPath!!)
+        }else changeFormSection('next')
     }
     const isLastStep = currentChildIndex === children.length-1
     const CurrentComponent = children[currentChildIndex].component
@@ -79,4 +67,4 @@ const MultipartForm = <T,>({ title, children,saveFn }: Props<T>) => {
     );
 };
 
-export default MultipartForm;
+export default MultistepForm;

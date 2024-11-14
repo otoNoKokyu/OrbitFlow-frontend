@@ -1,25 +1,21 @@
 import React, { useEffect } from 'react'
 import '../../../css/pages/signup.css'
-import MultipartForm from '../../../common/component/MultipartForm'
+import MultipartForm from '../../../common/component/MultistepForm'
 import SignupBasic from '../Forms/Signup_Basic'
 import SignupAddress from '../Forms/Signup_Address'
-import { IUser } from '../../../common/interface/Auth/auth'
 import authService from '../service/auth.service'
 import { useAuth } from '../../../common/hooks/useAuth'
+import { StepperComponent } from '../../../common/types/Auth/auth'
 
-type Child<T> = {
-  component: (ref: React.RefObject<T>, className?: string) => JSX.Element;
-};
+
 const Signup:  React.FC  = () => {
-
-  const {logout} = useAuth()
+  const {logout,setUserMeta} = useAuth()
 
   useEffect(()=>{
     logout()
-  },[])
+  },[])  
 
-  
-    const children: Array<Child<HTMLDivElement| HTMLInputElement>> =  [
+    const children: StepperComponent =  [
       {
         component: (ref,className)=> <SignupBasic className={className} ref={ref}/>
       },
@@ -35,6 +31,8 @@ const Signup:  React.FC  = () => {
       title='Orbitflow'
       children={children}
       saveFn = {authService.callRegister}
+      setMetaFn = {setUserMeta}
+      redirectPath='/login'
       />
     </div>
   )

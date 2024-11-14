@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 import '../../../css/pages/login.css'
-import { LoginType } from '../../../common/interface/Auth/auth';
+import { LoginType } from '../../../common/types/Auth/auth';
 import ErrorHandler from '../../../common/component/ErrorHandler';
 import { useAuth } from '../../../common/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';

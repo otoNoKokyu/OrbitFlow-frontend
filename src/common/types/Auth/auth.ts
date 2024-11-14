@@ -43,24 +43,14 @@ export interface IUser {
   assigned_role: RoleEnum;
   isInvited?: boolean;
 }
-
-export interface SignupBasics {
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone_number: string;
-  date_of_birth: string;
-  username: string;
-}
-
-export interface SignupAddress {
-  address: string;
-  city: string;
-  state: string;
-  zip_code: string;
-}
-
-export interface DefaultValues {
-  signupbasics: SignupBasics;
-  signupaddress: SignupAddress;
-}
+export type Child<T> = {
+  component: (ref: React.RefObject<T>, className?: string) => JSX.Element;
+};
+export type StepperComponent = Array<Child<HTMLDivElement| HTMLInputElement>> 
+export interface StepperForm<T> {
+  title?: string;
+  children: StepperComponent
+  saveFn: (data: T) => Promise<T>;
+  setMetaFn?: (data: T) => void
+  redirectPath?: string
+};

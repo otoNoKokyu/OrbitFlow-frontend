@@ -1,5 +1,5 @@
 import React, { ReactNode, createContext, useState } from 'react';
-import { ProviderProps, LoginType, IUser } from '../interface/Auth/auth';
+import { ProviderProps, LoginType, IUser } from '../types/Auth/auth';
 import authService from '../../features/Authentication/service/auth.service';
 export const authContext = createContext<ProviderProps>({} as ProviderProps);
 
@@ -18,7 +18,6 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
             return false
         }
     };
-
     const setUserMeta = (data: IUser) => {
         const { username, email, access_token, refresh_token } = data
         if (username && email) {
@@ -29,7 +28,6 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
             localStorage.setItem('tokens', JSON.stringify({ access_token, refresh_token }))
             setTokens({ access_token, refresh_token })
         }
-
 
     }
 

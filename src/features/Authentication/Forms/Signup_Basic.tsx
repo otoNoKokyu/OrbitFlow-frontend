@@ -3,7 +3,7 @@ import '../../../css/pages/signup.css';
 import classNames from 'classnames';
 import { useFormContext } from 'react-hook-form';
 import ErrorHandler from '../../../common/component/ErrorHandler';
-import { DefaultValues, IUser } from '../../../common/types/Auth/auth';
+import {IUser } from '../../../common/types/Auth/auth';
 
 const SignupBasic = forwardRef<HTMLDivElement, { className?: string}>(({ className }, ref) => { 
     const { register, formState: { errors } } = useFormContext<IUser>();

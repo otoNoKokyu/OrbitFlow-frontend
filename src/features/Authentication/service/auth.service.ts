@@ -14,17 +14,19 @@ const authService = {
             const tokenObj = response.data;
             return tokenObj;
     },
-    getUser: async (access_token: string): Promise<IUser|null> => {
-            const meData = await Instance({
-                url: '/auth/me',
-                method: 'get',
-                headers: {
-                    'authorization': `bearer ${access_token}`,
-                    'Content-Type' : 'application/json'
-                }
-            })
-            return meData.data;
-    }
+    // getUser: async (access_token: string): Promise<IUser|null> => {
+    //         const meData = await Instance({
+    //             url: '/auth/me',
+    //             method: 'get',
+    //             headers: {
+    //                 'Content-Type' : 'application/json'
+    //             }
+    //         })
+    //         return meData.data;
+    // },
+    verifyOtp: async (otp: number): Promise<void> => {
+        await Instance.post('/auth/otp', {otp});
+}
 
 }
 

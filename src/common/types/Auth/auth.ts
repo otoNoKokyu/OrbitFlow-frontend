@@ -42,6 +42,7 @@ export interface IUser {
   refresh_token: string;
   assigned_role: RoleEnum;
   isInvited?: boolean;
+  otp?:number
 }
 export type Child<T> = {
   component: (ref: React.RefObject<T>, className?: string) => JSX.Element;
@@ -53,4 +54,5 @@ export interface StepperForm<T> {
   saveFn: (data: T) => Promise<T>;
   setMetaFn?: (data: T) => void
   redirectPath?: string
+  hasOtpVerification?: boolean
 };

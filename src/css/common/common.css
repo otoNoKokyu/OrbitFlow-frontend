@@ -1,15 +1,112 @@
-.error-handler{
+.error-handler {
     text-align: start;
-    margin-top: 5px;
+    margin-top: 10px;
     margin-bottom: 5px;
 
     color: red;
-    span{
-        margin-left:5px;
+
+    span {
+        margin-left: 5px;
         font-size: smaller;
-        svg{
+
+        svg {
             margin-right: 10px;
         }
     }
 
+}
+
+.wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.otp-container {
+    background-color: white;
+    padding: 20px 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 100%;
+    max-width: 360px;
+}
+
+.otp-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.otp-instruction {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.otp-inputs {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+
+    input {
+        width: 45px;
+        height: 50px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+        outline: none;
+        transition: border-color 0.2s ease-in-out;
+    }
+
+}
+
+.resend-btn {
+    border: 0px;
+    background: blue;
+    border-radius: 5px;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    color: rgb(226, 212, 212);
+    cursor: pointer;
+    font-weight: 500;
+
+}
+
+
+.otp-box:focus {
+    border-color: #4caf50;
+}
+
+.otp-sent-info {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.otp-sent-info strong {
+    color: #000;
+}
+
+.otp-button {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    background-color: #4caf50;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.otp-button:hover {
+    background-color: #45a049;
 }

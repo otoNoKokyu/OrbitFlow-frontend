@@ -3,8 +3,8 @@ export type LoginType = {
     password: string;
 }
 export interface ProviderProps {
-    user:  IUser,
-    tokens: Record<string,string>
+    user:  Partial<IUser> | null,
+    tokens: {} | null,
     setUserMeta: (data: IUser) => void,
     login: (data: LoginType ) => Promise<boolean>,
     logout() :void,
@@ -18,6 +18,10 @@ enum RoleEnum {
     QA = 'QA',
     ADMIN = 'ADMIN',
   }
+export enum KeyMeta {
+  TOKEN = 'tokens',
+  USER = 'me'
+}
 export interface IUser {
   user_id: string;
   username: string;
@@ -42,7 +46,9 @@ export interface IUser {
   refresh_token: string;
   assigned_role: RoleEnum;
   isInvited?: boolean;
-  otp?:number
+}
+export interface IUserMeta {
+
 }
 export type Child<T> = {
   component: (ref: React.RefObject<T>, className?: string) => JSX.Element;
@@ -52,7 +58,4 @@ export interface StepperForm<T> {
   title?: string;
   children: StepperComponent
   saveFn: (data: T) => Promise<T>;
-  setMetaFn?: (data: T) => void
-  redirectPath?: string
-  hasOtpVerification?: boolean
 };

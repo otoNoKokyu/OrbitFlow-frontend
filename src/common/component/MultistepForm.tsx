@@ -9,12 +9,11 @@ const duration = 300;
 
 
 
-const MultistepForm = <T,>({ title, children,saveFn,redirectPath,setMetaFn }: StepperForm<T>) => {
+const MultistepForm = <T,>({ title, children,saveFn}: StepperForm<T>) => {
     const [currentChildIndex, setCurrentChildIndex] = useState(0);
     const [isIn, setIsIn] = useState(true);
     const nodeRef = useRef(null);
     const methods = useForm();
-    const navigate = useNavigate()
 
     const changeFormSection = (type: 'next' | 'previous') => {
         setIsIn(false);
@@ -26,11 +25,8 @@ const MultistepForm = <T,>({ title, children,saveFn,redirectPath,setMetaFn }: St
         }, duration);
     };
     const onSubmit = async(formVal: any) => {
-        if (isLastStep) {
-            const data = await saveFn(formVal)
-            setMetaFn?.(data)
-            navigate(redirectPath!!)
-        }else changeFormSection('next')
+        if (isLastStep) await saveFn(formVal) 
+        else changeFormSection('next')
     }
     const isLastStep = currentChildIndex === children.length-1
     const CurrentComponent = children[currentChildIndex].component

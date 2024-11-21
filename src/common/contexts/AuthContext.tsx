@@ -1,12 +1,16 @@
 import React, { ReactNode, createContext, useState } from 'react';
-import { ProviderProps, LoginType, IUser } from '../types/Auth/auth';
+import { ProviderProps, LoginType, IUser, IUserMeta, KeyMeta } from '../types/Auth/auth';
 import authService from '../../features/Authentication/service/auth.service';
 export const authContext = createContext<ProviderProps>({} as ProviderProps);
 
 const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const existsUser = localStorage.getItem('me') ? JSON.parse(localStorage.getItem('me') || '{}') : null;
-    const [user, setUser] = useState(existsUser);
-    const [tokens, setTokens] = useState(localStorage.getItem('toekns') ? JSON.parse(localStorage.getItem('tokens') || '{}') : null)
+    const existsUser = authService.getUserMeta([KeyMeta.USER, KeyMeta.TOKEN]);
+    const [user, setUser] = useState<Partial<IUser>>(existsUser);
+    
+    const userSetter = (data: any) => {
+      setUser((prev) => ({ ...prev, ...data }));
+    };
+        const { username, email, access_token, refresh_token } = user;
 
     const login = async (data: LoginType): Promise<boolean> => {
         try {
@@ -18,30 +22,21 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
             return false
         }
     };
-    const setUserMeta = (data: IUser) => {
-        const { username, email, access_token, refresh_token } = data
-        if (username && email) {
-            localStorage.setItem('me', JSON.stringify({ username, email }))
-            setUser({ username, email })
-        }
-        if (access_token && refresh_token) {
-            localStorage.setItem('tokens', JSON.stringify({ access_token, refresh_token }))
-            setTokens({ access_token, refresh_token })
-        }
-
-    }
+    const setUserMeta = (data: IUser & IUserMeta) => authService.setUser(data, userSetter)
 
     const logout = () => {
-        localStorage.removeItem('me');
-        localStorage.removeItem('tokens');
-        setUser(null);
-        setTokens(null);
+        authService.removeUserMeta([KeyMeta.TOKEN,KeyMeta.USER])
+        setUser({});
     };
+
+    const isUserEmpty = !Object.values({username,email}).some(o => o)
+    const isTokenEmpty = !Object.values({access_token,refresh_token}).some(o => o)
 
     return (
         <authContext.Provider value={{
-            login, logout,
-            user, tokens, setUserMeta
+            login, logout,setUserMeta,
+            user:isUserEmpty?null:{username,email} ,
+            tokens:isTokenEmpty?null:{access_token,refresh_token}
         }}>
             {children}
         </authContext.Provider>

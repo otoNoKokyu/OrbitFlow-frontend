@@ -1,39 +1,27 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 interface TimerProps {
-  expiresIn: number; 
-  onExpire: () => void; 
+  expiresIn: number;
+  onExpire: () => void;
 }
 
 const Timer: React.FC<TimerProps> = ({ expiresIn, onExpire }) => {
-  const [timeLeft, setTimeLeft] = useState(0);
-  const timerRef = useRef<number|null>(null);
+  const [timeLeft, setTimeLeft] = useState<number>(expiresIn - Math.floor(new Date().getTime() / 1000));
 
   useEffect(() => {
-    const savedExpiry = localStorage.getItem("otpExpiryTime");
-    const expiryTime = savedExpiry ? parseInt(savedExpiry, 10) : Date.now() + expiresIn * 1000;
-
-    if (!savedExpiry) {
-      localStorage.setItem("otpExpiryTime", expiryTime.toString());
-    }
-
-    const updateRemainingTime = () => {
-      const remainingTime = Math.max(0, Math.floor((expiryTime - Date.now()) / 1000));
-      setTimeLeft(remainingTime);
-
-      if (remainingTime <= 0) {
-        clearInterval(timerRef.current!);
-        localStorage.removeItem("otpExpiryTime"); 
-        onExpire?.();
+    const interval = setInterval(() => {
+      const currentTime = Math.floor(new Date().getTime() / 1000);
+      const newTimeLeft = expiresIn - currentTime;
+      
+      if (newTimeLeft <= 0) {
+        onExpire();
+        clearInterval(interval);
+      } else {
+        setTimeLeft(newTimeLeft);
       }
-    };
+    }, 1000);
 
-    updateRemainingTime(); 
-    timerRef.current = setInterval(updateRemainingTime, 1000);
-
-    return () => {
-      clearInterval(timerRef.current!);
-    };
+    return () => clearInterval(interval);
   }, [expiresIn, onExpire]);
 
   const formatTime = (seconds: number): string => {

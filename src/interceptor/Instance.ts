@@ -2,7 +2,8 @@ import axios, { AxiosInstance } from 'axios';
 
 enum excludedEndpoint {
     LOGIN = '/signin',
-    REGISTER = '/signup'
+    REGISTER = '/signup',
+    OTP_VERIFY = '/handleOtp'
 } 
 
 export const Instance: AxiosInstance = axios.create({
@@ -12,12 +13,14 @@ export const Instance: AxiosInstance = axios.create({
 
 Instance.interceptors.request.use(
     (config) => {
-    if (config.url?.endsWith(excludedEndpoint.LOGIN) || config.url?.endsWith(excludedEndpoint.REGISTER)) return  config
+    if (config.url?.endsWith(excludedEndpoint.LOGIN) || config.url?.endsWith(excludedEndpoint.REGISTER)||config.url?.split('?')[0]?.endsWith(excludedEndpoint.OTP_VERIFY)) return  config
     const token = localStorage.getItem('tokens')?JSON.parse(localStorage.getItem('tokens')!!): null
     config.headers.Authorization = `bearer ${token.access_token}`
     return config;
   },
-  function (error) {
+  function (error) {   
+
+
     return Promise.reject(error);
   }
 );
@@ -27,6 +30,8 @@ Instance.interceptors.response.use(
       return response
     },
     (error) => {
+      console.log(error)
+
       const request = error.config
       if (error.response.status === 401 && !request._retry) {
         request._retry = true

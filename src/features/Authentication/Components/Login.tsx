@@ -1,9 +1,9 @@
 import { useForm } from 'react-hook-form';
 import '../../../css/pages/login.css'
-import { LoginType } from '../../../common/types/Auth/auth';
+import { LoginType } from "../../../features/Authentication/Model/auth.model";
 import ErrorHandler from '../../../common/component/ErrorHandler';
 import { useAuth } from '../../../common/hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { validateEmail } from '../constants/auth.constant';
 
@@ -19,8 +19,8 @@ const Login = () => {
     const { register, handleSubmit, formState: { errors } } = useForm<LoginType>();
 
     const onSubmit = async(form: LoginType) => {
-        await login(form)
-        navigate('/')
+        const isSubmitted = await login(form)
+        if(isSubmitted)navigate('/')
 
     }
 
@@ -50,6 +50,11 @@ const Login = () => {
                     </button>
                 </div>
             </form>
+            <div className="signup-redirect">
+                <p>Don't have an account?</p>
+                <Link to='/register'>Click here</Link>
+            </div>
+            
         </div>
     )
 }

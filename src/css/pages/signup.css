@@ -3,76 +3,63 @@
     justify-content: center;
     align-items: center;
     height: 100vh;
-    
-
-
-    .form-container{
-        text-align: center;
-        h1 {
-            font-size: 28px;
-            font-weight: bold;
-            background: linear-gradient(0deg, blue, limegreen);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            transition: background 0.5s ease;
-            text-align: center;
-            display: block;
+  
+    .form-container {
+      text-align: center;
+  
+      h1 {
+        font-size: 28px;
+        font-weight: bold;
+        background: linear-gradient(0deg, blue, limegreen);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        transition: background 0.5s ease;
+      }
+  
+      .signup-common {
+        width: 500px;
+        height: 400px;
+        padding: 20px 15px 20px 20px; 
+        transition: opacity 0.3s ease, transform 0.3s ease;
+  
+        input {
+          padding: 15px;
+          width: 100%;
+          border-radius: 6px;
+          outline: none;
+          border: 1px solid rgb(151, 146, 146);
+          font-weight: bold;
+          color: black;
         }
-        .signup-common{
-            width: 500px;
-            height: 400px;
-            padding: 20px;
-            padding-right: 15px;
-            transition: opacity 0.3s ease, transform 0.3s ease;
-
-            input {
-                padding: 15px;
-                width: 100%;
-                border-radius: 6px;
-                outline: none;
-                border:1px solid rgb(151, 146, 146);
-                
-        
-            }
-            input::placeholder{
-                color: black;
-                font-weight: bold;
-            }
-        .error{
-            border-color: red;
+  
+        input::placeholder {
+          font-weight: bold;
+          color: black;
         }
+  
+        .error {
+          border-color: red;
         }
-        .name {
-            display: flex;
-            gap: 10px;
-        }
-        .tran-in {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        .signup-common div {
-            margin-bottom: 20px;
-        }
-        .tran-out {
-            opacity: 0;
-            transform: translateX(-5px);
-        }
-
-
-    }
-
-
-
-
-
-
-
-
-
-    /* .tran-in {
-        transition: opacity 0.3s ease, transform 0.3s ease ;
+      }
+  
+      .name {
+        display: flex;
+        gap: 10px;
+      }
+  
+      .tran-in {
         opacity: 1;
         transform: translateX(0);
-    } */
-
-}
+      }
+  
+      .tran-out {
+        opacity: 0;
+        transform: translateX(-5px);
+      }
+  
+      .signup-common div {
+        margin-bottom: 20px;
+      }
+    }
+  }
+  

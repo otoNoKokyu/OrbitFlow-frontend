@@ -1,25 +1,29 @@
-import React, { useEffect, useState } from 'react';
+import React, {useState} from 'react';
 import '../../css/common/common.css';
 import Timer from './Timer';
 import ErrorHandler from './ErrorHandler';
 import { useNavigate } from 'react-router-dom';
 import { useSearchParams } from "react-router-dom";
+import useApiManager from '../hooks/useApiManager';
 
 interface OtpBoxProps {
-  submitFn: (data: { otp?: number; type: 'resend' | 'verify'; email: string }) => Promise<boolean>;
-
+  submitFn: (data: { otp: number; email: string }) => Promise<any>;
+  resendFn: (data: { email: string }) => Promise<any>;
 }
 
-const OtpBox: React.FC<OtpBoxProps> = ({ submitFn,}) => {
+const OtpBox: React.FC<OtpBoxProps> = ({ submitFn,resendFn,}) => {
+
   const [searchParams] = useSearchParams()
   const credentials = JSON.parse(atob(searchParams.get('cred')!!))  
   const {email,expiresIn} = credentials
   if(!email || !expiresIn) return null
+
   const [otp, setOtp] = useState<string[]>(["", "", "", "",""]);
   const [resend, setResend] = useState(false);
-  const [otpMatched, setotpMatched] = useState<boolean|null>(null)
+  // const [otpResponse, setotpResponse] = useState<string>('')
   const navigate = useNavigate()
 
+  const [otpExpiry, setOtpExpiry] = useState(expiresIn)
   const handleInputChange = (index: number, value: string) => {
     if (/^\d?$/.test(value)) { 
       setOtp((prevOtp) => {
@@ -32,13 +36,11 @@ const OtpBox: React.FC<OtpBoxProps> = ({ submitFn,}) => {
 
   const handleSubmit = async() => {
     const completeOtp = otp.join("");
-    const isValid = await submitFn({
+     await submitFn({
       email:email,
       otp: +completeOtp,
-      type: 'verify'    
     });
-    if(isValid) setotpMatched(false)
-    else navigate('/login')
+     navigate('/login')
   };
 
   const onExpire = () => setResend(true);
@@ -74,17 +76,21 @@ const OtpBox: React.FC<OtpBoxProps> = ({ submitFn,}) => {
           A Otp has been sent to <strong>{email}</strong>
         </p>
         {resend ? (
-          <button onClick={()=>{
-            submitFn({type:'resend', email:email})
+          <button onClick={async()=>{
+            const resendData = await resendFn({ email})
+            if (resendData && (resendData as any).expiresIn) {
+            setOtpExpiry((resendData as any).expiresIn);
             setResend(false)
+
+            }
           }} className="resend-btn">Resend</button>
         ) : (
-          <Timer expiresIn={expiresIn} onExpire={onExpire} />
+          <Timer expiresIn={otpExpiry} onExpire={onExpire} />
         )}
         <button className="otp-button" onClick={handleSubmit}>
           Submit
         </button>
-        {otpMatched === false && <ErrorHandler text='otp mismatched'/>}
+        {/* {otpResponse && <ErrorHandler text={otpResponse}/>} */}
       </div>
     </div>
   );

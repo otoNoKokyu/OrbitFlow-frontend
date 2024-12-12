@@ -3,7 +3,6 @@ import { Transition } from 'react-transition-group';
 import { useRef } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import {StepperForm } from '../types/Auth/auth';
-import { useNavigate } from 'react-router-dom';
 
 const duration = 300;
 

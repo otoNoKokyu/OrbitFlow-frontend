@@ -1,10 +1,10 @@
 import '../../../css/common/common.css';
 import { useFormContext } from 'react-hook-form';
-import { IUser } from '../../../common/types/Auth/auth';
+import { User } from '../../../common/types/Auth/auth';
 import ErrorHandler from '../../../common/component/ErrorHandler';
 
 const OtpBox = () => {
-    const { register, formState: { errors } } = useFormContext<Pick<IUser, 'otp'>>();
+    const { register, formState: { errors } } = useFormContext<Pick<User, 'otp'>>();
 
     return (
         <><div className='otp-box'>

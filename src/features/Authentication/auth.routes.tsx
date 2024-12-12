@@ -17,7 +17,10 @@ export default function AuthRoutes() {
         },
         {
             path: '/verify',
-            element: <OtpBox submitFn={authService.verifyOtp} />
+            element: <OtpBox 
+            submitFn={authService.verifyOtp}
+            resendFn={authService.sendOtp}
+             />
         },
     ]);
     return routes

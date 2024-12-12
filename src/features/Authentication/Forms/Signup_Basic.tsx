@@ -3,10 +3,10 @@ import '../../../css/pages/signup.css';
 import classNames from 'classnames';
 import { useFormContext } from 'react-hook-form';
 import ErrorHandler from '../../../common/component/ErrorHandler';
-import {IUser } from '../../../common/types/Auth/auth';
+import {User } from '../../../common/types/Auth/auth';
 
 const SignupBasic = forwardRef<HTMLDivElement, { className?: string}>(({ className }, ref) => { 
-    const { register, formState: { errors } } = useFormContext<IUser>();
+    const { register, formState: { errors } } = useFormContext<User>();
 
     return (
             <div className={classNames('signup-common', className)} ref={ref}>
@@ -50,25 +50,15 @@ const SignupBasic = forwardRef<HTMLDivElement, { className?: string}>(({ classNa
                     />
                     <ErrorHandler text={errors.password_hash?.message} />
                 </div>
-
-
                 <div>
-                    <input
-                        {...register('date_of_birth', { required: 'Date of Birth is required' })}
-                        type="date"
-                        placeholder="Date of Birth"
-                    />
-                    <ErrorHandler text={errors.date_of_birth?.message} />
-                </div>
+                <input
+                    {...register('date_of_birth', { required: 'Date of Birth is required' })}
+                    type="date"
+                    placeholder="Date of Birth"
+                />
+                <ErrorHandler text={errors.date_of_birth?.message} />
+            </div>
 
-                <div>
-                    <input
-                        {...register('username', { required: 'Username is required' })}
-                        type="text"
-                        placeholder="Username"
-                    />
-                    <ErrorHandler text={errors.username?.message} />
-                </div>
             </div>
         )
 });

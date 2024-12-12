@@ -6,22 +6,27 @@ import SignupAddress from '../Forms/Signup_Address'
 import authService from '../service/auth.service'
 import { useAuth } from '../../../common/hooks/useAuth'
 import { StepperComponent } from '../../../common/types/Auth/auth'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { SignupType } from '../Model/auth.model'
 
 const Signup: React.FC = () => {
-  const { logout, setUserMeta } = useAuth()
+  const { logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const queryParams = new URLSearchParams(location.search);
+  const paramValue = queryParams.get('id');
   const signUpHandler = useCallback(
-    async (data: any) => {
-      const response = await authService.callRegister(data);
-      setUserMeta(response);
+    async (data: SignupType) => {
+      let response
+      if(paramValue) response = await authService.callRegister(data,paramValue);
+      else response = await authService.callRegister(data);
       const encodedData = btoa(JSON.stringify(response));
       navigate({
         pathname: "/verify",
         search: `?cred=${encodedData}`,
       });
     },
-    [setUserMeta]
+    []
   );
 
   useEffect(() => {
@@ -35,6 +40,7 @@ const Signup: React.FC = () => {
     {
       component: (ref, className) => <SignupAddress className={className} ref={ref} />
     },
+
 
   ]
 

@@ -1,60 +1,63 @@
-import { IUser, KeyMeta, LoginType } from '../../../common/types/Auth/auth'
+import { AxiosRequestConfig } from 'axios';
+import { User, KeyMeta } from '../../../common/types/Auth/auth'
+import { IResponse } from '../../../common/types/global/response';
 import { Instance } from '../../../interceptor/Instance';
+import { asyncHandler } from '../../../utility/asyncHandler'
+import { Login, sendOtp, Signup, LoginType, SignupType } from '../Model/auth.model';
+
 
 const authService = {
 
-        callRegister: async (payload: IUser): Promise<IUser> => {
-                const response = await Instance.post('/auth/signup', { ...payload, isInvited: false, assigned_role: 'ADMIN' });
-                if (response.status !== 200) throw Error('http status mismatch')
-                const { data } = response
-                return data
-        },
-        callLogin: async (data: LoginType) => {
-                const response = await Instance.post('/auth/signin', data);
-                const tokenObj = response.data;
-                return tokenObj;
-        },
-        verifyOtp: async ({ email, otp, type }: { otp?: number, type: 'resend' | 'verify', email: String }): Promise<boolean> => {
-                console.log("hello")
-                try {
-                        const response = await Instance.post(`/auth/handleOtp?type=${type}`, { otp, email });
-                        console.log(response)
-                        if (response.status === 200) return true
-
-
-                } catch (error) {
-                        console.log(error)
-                        return false
-
+        callRegister: asyncHandler(async (payload: SignupType, inviteId?: string): Promise<IResponse<Signup>> => {
+                const config: AxiosRequestConfig = {
+                        url: '/auth/signUp',
+                        method: 'post',
+                        data: {
+                                ...payload,
+                                isInvited: false,
+                                assigned_role: 'ADMIN'
+                        },
                 }
-                return false
-
-        },
-        setUser: (data: IUser, localSetterFn: (args: Partial<IUser>) => void) => {
-                const { username, email, access_token, refresh_token } = data;
-                switch (true) {
-                        case !!(username && email):
-                                localStorage.setItem(KeyMeta.USER, JSON.stringify({ username, email }));
-                                localSetterFn({ username, email });
-                                return;
-                        case !!(access_token && refresh_token):
-                                localStorage.setItem(KeyMeta.TOKEN, JSON.stringify({ access_token, refresh_token }));
-                                localSetterFn({ access_token, refresh_token });
-                                return;
-                        default:
-                                console.warn("No matching case found.");
-                                return;
+                if (inviteId) {
+                        delete config.data.assigned_role
+                        config.headers = { id: inviteId }
                 }
+                const response : IResponse<Signup> = await Instance(config)
+                return response;
+        }),
+
+        callLogin: asyncHandler(async (data: LoginType): Promise<IResponse<Login>> => {
+                const response: IResponse<Login> = await Instance.post('/auth/signin', data);
+                return response
+        }),
+        verifyOtp: asyncHandler(async ({ email, otp }: { otp?: number, email: String }): Promise<IResponse<string>> => {
+                const response: IResponse<string> = await Instance.post(`/auth/verify`, { otp, email });
+                return response;
+        }),
+        sendOtp: asyncHandler(async ({ email }: { email: string }): Promise<IResponse<sendOtp>> => {
+                const response: IResponse<sendOtp> = await Instance.post(`/auth/sendOtp`, { resend: true, email })
+                return response;
+        }),
+        getMe: asyncHandler(async (): Promise<IResponse<any>> => {
+                const response: IResponse<any> = await Instance.get(`/auth/me`)
+                return response;
+        }),
+        setUser: (data: Partial<User>, localSetterFn: (args: User) => void) => {
+                const { username, access_token, refresh_token } = data;
+                localStorage.setItem(KeyMeta.USER, JSON.stringify({ username }));
+                localStorage.setItem(KeyMeta.TOKEN, JSON.stringify({ access_token, refresh_token }));
+                localSetterFn({ username, access_token, refresh_token });
         },
+
         getUserMeta: (key: KeyMeta[]) => {
                 return key.reduce((data, e) => {
-                    const storedItem = localStorage.getItem(e);
-                    if (storedItem) return { ...data, ...JSON.parse(storedItem) };
-                    return data;
-                }, {});
-            },
-        removeUserMeta: (key: KeyMeta[])=>key.forEach(K=>localStorage.removeItem(K))
-            
+                        const storedItem = localStorage.getItem(e);
+                        if (storedItem) return { ...data, ...JSON.parse(storedItem) };
+                        return data
+                }, {} as User);
+        },
+        removeUserMeta: (key: KeyMeta[]) => key.forEach(K => localStorage.removeItem(K))
+
 }
 
 export default authService

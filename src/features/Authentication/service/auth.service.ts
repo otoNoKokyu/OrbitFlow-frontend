@@ -22,7 +22,7 @@ const authService = {
                         delete config.data.assigned_role
                         config.headers = { id: inviteId }
                 }
-                const response : IResponse<Signup> = await Instance(config)
+                const response: IResponse<Signup> = await Instance(config)
                 return response;
         }),
 
@@ -48,7 +48,6 @@ const authService = {
                 localStorage.setItem(KeyMeta.TOKEN, JSON.stringify({ access_token, refresh_token }));
                 localSetterFn({ username, access_token, refresh_token });
         },
-
         getUserMeta: (key: KeyMeta[]) => {
                 return key.reduce((data, e) => {
                         const storedItem = localStorage.getItem(e);

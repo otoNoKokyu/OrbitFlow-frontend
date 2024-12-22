@@ -28,11 +28,9 @@ const Signup: React.FC = () => {
     },
     []
   );
-
   useEffect(() => {
     logout()
   }, [])
-
   const children: StepperComponent = [
     {
       component: (ref, className) => <SignupBasic className={className} ref={ref} />
@@ -40,11 +38,7 @@ const Signup: React.FC = () => {
     {
       component: (ref, className) => <SignupAddress className={className} ref={ref} />
     },
-
-
   ]
-
-
   return (
     <div className='signup-container'>
       <MultiStepForm

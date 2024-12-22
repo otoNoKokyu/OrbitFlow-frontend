@@ -1,6 +1,7 @@
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
 import { IResponse } from '../common/types/global/response';
 
+
 enum ExcludedEndpoint {
   LOGIN = '/signin',
   REGISTER = '/signup',
@@ -47,9 +48,8 @@ Instance.interceptors.response.use(
     return { responsePayload: data, statusCode: status };
   },
 
-  async (error: AxiosError): Promise<AxiosResponse<Pick<IResponse, 'error' | 'message'>, any>> => {
+  async (error): Promise<AxiosResponse<Pick<IResponse, 'error' | 'message'>, any>> => {
     const request = error.config!!
-    console.log(error)
     if (error.response?.status === 401 && !request?.baseURL?.endsWith('/token')) {
       const tokens = localStorage.getItem('tokens')
         ? JSON.parse(localStorage.getItem('tokens')!)

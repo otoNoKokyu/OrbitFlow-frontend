@@ -1,7 +1,8 @@
 .topbar-container {
-    max-height: 70px;
+    max-height: 56px;
     padding: 15px;
-    border-bottom: 3px rgb(219, 205, 205) solid;
+    /* border-bottom: 3px rgb(219, 205, 205) solid; */
+    border-block-end: 1px solid  #EBECF0;
     display: flex;
     margin-left: 200px;
     justify-content: space-between;
@@ -14,12 +15,20 @@
 
     button {
         border: none;
+        color: #344563;
         font-size: medium;
         font-weight: bold;
         background: none;
-        padding: 10px;
+        padding: 5px;
         border-radius: 2px;
     }
+    .create {
+        background: rgb(26, 26, 250);
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+    }
+    .create:hover {}
 }
 
 .topbar-nav {
@@ -46,10 +55,5 @@ button:hover {
     cursor: pointer;
 }
 
-.create {
-    background: blue;
-    color: white;
-    border-radius: 2px;
-}
 
-.create:hover {}
+

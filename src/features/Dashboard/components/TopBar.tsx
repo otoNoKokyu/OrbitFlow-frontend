@@ -50,21 +50,24 @@ const TopBar: FC<Props> = ({ name = 'AC' }) => {
             </div>
             <nav className='topbar-nav'>
                 <NavLink to="#">
-                    <div>
-                        <FontAwesomeIcon icon={faGear} size='lg' />
+                    <div style={{background:'blue'}}>
+                        <FontAwesomeIcon icon={faGear} size='lg' color='white' />
                     </div>
                 </NavLink>
                 <NavLink to="#">
-                    <div>
+                    <div style={{background:'blue'}}>
                         <FontAwesomeIcon
+                            color='white'
                             icon={faBell}
                             size='lg' />
                     </div>
                 </NavLink>
                 <NavLink
-                    style={{ textDecoration: 'none', fontWeight: 'bolder' }}
                     to="#">
-                    <div>
+                    <div 
+                    style={{color:'white', background:'blue', textDecoration: 'none', fontWeight: 'bolder' }}
+                    
+                    >
                         {name}
                     </div>
                 </NavLink>

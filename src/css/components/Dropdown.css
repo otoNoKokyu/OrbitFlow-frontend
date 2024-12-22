@@ -1,0 +1,49 @@
+.btn {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0.6rem;
+    cursor: pointer;
+    border-radius: 5px;
+    border: none;
+    font-size: medium;
+    font-weight: bold;
+    background: none;
+    position: relative;
+  }
+ul{
+    margin: 0;
+    padding: 5px;
+    position: absolute;
+    width: 250px;
+    box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 10px 0px;
+    border-radius: 5px;
+    margin-top: 1.3rem;
+    border-radius: 5px;
+    list-style: none;
+    border: 1px solid #cfc1c147;
+}
+ul li{
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    list-style: none;
+    font-size: inherit;
+    border-bottom: 1px solid #cfc1c147;
+    button{
+        display: flex;
+        margin: 0;
+        padding: 0;
+        justify-content: space-between;
+        border: none;
+        width: 100%;
+        font-size: inherit;
+        background-color: inherit;
+    }
+    
+
+}
+li:last-child{
+    border-bottom: none;
+}

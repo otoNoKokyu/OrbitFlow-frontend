@@ -1,0 +1,36 @@
+
+
+.sidebar-container {
+    height: 100%;
+    width: 200px;
+    border-right: 1px solid black;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000; 
+    background-color: #fff; 
+}
+
+.project-container{
+    margin-top: 15px;
+    font-family: "Roboto", serif;
+    font-weight: bold;
+}
+.project-container-header{
+    display: flex;
+    justify-content: flex-end;
+    margin-right: 30px;
+    align-items: center;
+    .create-project{
+        background-color: rgb(24, 93, 221);
+        padding: 10px;
+        border-radius: 8px;
+        border: 0;
+        color: #fff;
+    }
+    .create-project:hover{
+        cursor: pointer;
+    }
+
+    
+}

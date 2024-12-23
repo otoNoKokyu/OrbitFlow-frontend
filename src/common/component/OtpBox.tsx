@@ -1,17 +1,16 @@
 import React, {useState} from 'react';
 import '../../css/common/common.css';
 import Timer from './Timer';
-import ErrorHandler from './ErrorHandler';
 import { useNavigate } from 'react-router-dom';
 import { useSearchParams } from "react-router-dom";
-import useApiManager from '../hooks/useApiManager';
 
 interface OtpBoxProps {
   submitFn: (data: { otp: number; email: string }) => Promise<any>;
-  resendFn: (data: { email: string }) => Promise<any>;
+  resendFn: (data: { email: string, resend: boolean }) => Promise<any>;
+  optionalFn?: () => Promise<any>
 }
 
-const OtpBox: React.FC<OtpBoxProps> = ({ submitFn,resendFn,}) => {
+const OtpBox: React.FC<OtpBoxProps> = ({ submitFn,resendFn,optionalFn}) => {
 
   const [searchParams] = useSearchParams()
   const credentials = JSON.parse(atob(searchParams.get('cred')!!))  
@@ -20,7 +19,6 @@ const OtpBox: React.FC<OtpBoxProps> = ({ submitFn,resendFn,}) => {
 
   const [otp, setOtp] = useState<string[]>(["", "", "", "",""]);
   const [resend, setResend] = useState(false);
-  // const [otpResponse, setotpResponse] = useState<string>('')
   const navigate = useNavigate()
 
   const [otpExpiry, setOtpExpiry] = useState(expiresIn)
@@ -33,18 +31,16 @@ const OtpBox: React.FC<OtpBoxProps> = ({ submitFn,resendFn,}) => {
       });
     }
   };
-
   const handleSubmit = async() => {
     const completeOtp = otp.join("");
      await submitFn({
       email:email,
       otp: +completeOtp,
     });
+    await optionalFn?.()
      navigate('/login')
   };
-
   const onExpire = () => setResend(true);
-
   return (
     <div className="wrapper">
       <div className="otp-container">
@@ -77,7 +73,7 @@ const OtpBox: React.FC<OtpBoxProps> = ({ submitFn,resendFn,}) => {
         </p>
         {resend ? (
           <button onClick={async()=>{
-            const resendData = await resendFn({ email})
+            const resendData = await resendFn({ email, resend: true})
             if (resendData && (resendData as any).expiresIn) {
             setOtpExpiry((resendData as any).expiresIn);
             setResend(false)

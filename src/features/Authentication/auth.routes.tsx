@@ -1,4 +1,3 @@
-// authRoutes.ts
 import OtpBox from '../../common/component/OtpBox';
 import Login from './components/Login';
 import Signup from './components/Signup'
@@ -20,6 +19,7 @@ export default function AuthRoutes() {
             element: <OtpBox 
             submitFn={authService.verifyOtp}
             resendFn={authService.sendOtp}
+            optionalFn={authService.callRegister}
              />
         },
     ]);

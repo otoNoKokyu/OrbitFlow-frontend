@@ -8,14 +8,19 @@ import { Login, sendOtp, Signup, LoginType, SignupType } from '../Model/auth.mod
 
 const authService = {
 
-        callRegister: asyncHandler(async (payload: SignupType, inviteId?: string): Promise<IResponse<Signup>> => {
+        callRegister: asyncHandler(async (): Promise<IResponse<Signup>> => {
+                const rawTempData = localStorage.getItem('tempRegisterData')!!
+                const parsedData = JSON.parse(rawTempData)
+                const inviteId =  parsedData.inviteId
+                delete parsedData.inviteId
                 const config: AxiosRequestConfig = {
                         url: '/auth/signUp',
                         method: 'post',
                         data: {
-                                ...payload,
+                                ...parsedData,
                                 isInvited: false,
-                                assigned_role: 'ADMIN'
+                                assigned_role: 'ADMIN',
+                                invited_by: ''
                         },
                 }
                 if (inviteId) {
@@ -23,6 +28,7 @@ const authService = {
                         config.headers = { id: inviteId }
                 }
                 const response: IResponse<Signup> = await Instance(config)
+                if(response.statusCode ===200) localStorage.removeItem('tempRegisterData')
                 return response;
         }),
 
@@ -34,8 +40,9 @@ const authService = {
                 const response: IResponse<string> = await Instance.post(`/auth/verify`, { otp, email });
                 return response;
         }),
-        sendOtp: asyncHandler(async ({ email }: { email: string }): Promise<IResponse<sendOtp>> => {
-                const response: IResponse<sendOtp> = await Instance.post(`/auth/sendOtp`, { resend: true, email })
+        sendOtp: asyncHandler(async ({ email,resend = false }: { email: string, resend: boolean }): Promise<IResponse<sendOtp>> => {
+                console.log(email,resend)
+                const response: IResponse<sendOtp> = await Instance.post(`/auth/sendOtp`, { resend, email })
                 return response;
         }),
         getMe: asyncHandler(async (): Promise<IResponse<any>> => {

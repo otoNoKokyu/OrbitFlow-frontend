@@ -17,10 +17,11 @@ const Signup: React.FC = () => {
   const paramValue = queryParams.get('id');
   const signUpHandler = useCallback(
     async (data: SignupType) => {
-      let response
-      if(paramValue) response = await authService.callRegister(data,paramValue);
-      else response = await authService.callRegister(data);
-      const encodedData = btoa(JSON.stringify(response));
+      let tempRegisterData: SignupType | unknown = { ...data };
+      if (paramValue) tempRegisterData = { ...data, inviteId: paramValue };
+      localStorage.setItem("tempRegisterData", JSON.stringify(tempRegisterData));
+      const { expiresIn } = await authService.sendOtp({ email: data.email })
+      const encodedData = btoa(JSON.stringify({ email: data.email, expiresIn }));
       navigate({
         pathname: "/verify",
         search: `?cred=${encodedData}`,

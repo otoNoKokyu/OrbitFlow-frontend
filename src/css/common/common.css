@@ -110,3 +110,10 @@
 .otp-button:hover {
     background-color: #45a049;
 }
+
+.flex {
+    display: flex;
+}
+.items-center {
+    align-items: center;
+}

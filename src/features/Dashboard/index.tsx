@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../common/hooks/useAuth";
-import TopBar from "./components/TopBar";
-import Sidebar from "./components/Sidebar";
 import '../../css/pages/dashboard.css'
 
 
@@ -25,11 +23,9 @@ export const Dashboard = () => {
   }
   return (
     <>
-      <TopBar name={user?.username?.[0].toUpperCase()!!} />
-      <Sidebar />
       <div className="project-container roboto-medium">
         <div className="project-container-header">
-
+          
         </div>
       </div>
     </>

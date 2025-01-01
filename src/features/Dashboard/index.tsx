@@ -27,11 +27,11 @@ export const Dashboard = () => {
     <>
       <TopBar name={user?.username?.[0].toUpperCase()!!} />
       <Sidebar />
-      <div className="project-container roboto-medium">
+      {/* <div className="project-container roboto-medium">
         <div className="project-container-header">
 
         </div>
-      </div>
+      </div> */}
     </>
   );
 };

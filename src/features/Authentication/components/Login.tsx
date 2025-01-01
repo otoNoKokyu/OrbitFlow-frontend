@@ -5,7 +5,7 @@ import ErrorHandler from '../../../common/component/ErrorHandler';
 import { useAuth } from '../../../common/hooks/useAuth';
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import { validateEmail } from '../constants/auth.constant';
+import { validateEmail } from '../../../utility/validator';
 
 
 const Login = () => {

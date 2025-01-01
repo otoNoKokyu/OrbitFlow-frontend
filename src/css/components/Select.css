@@ -1,0 +1,56 @@
+.select-box {
+    border: 1px solid #ccc;
+    padding: 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 300px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.select-box:placeholder-shown{
+    color: #888; 
+}
+
+.selected-options {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    
+}
+.no-data {
+    padding: 8px;
+    color: #888; 
+    text-align: center;
+    cursor: default;
+  }
+  
+.arrow-icon {
+    margin-left: 8px;
+}
+
+.options-list {
+    border: 1px solid #ccc;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 4px;
+    padding: 0;
+    list-style-type: none;
+    background-color: white
+}
+
+.option-item {
+    padding: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+
+.option-item:hover {
+    background-color: #f0f0f0;
+}
+
+.check-icon {
+    margin-left: auto;
+}

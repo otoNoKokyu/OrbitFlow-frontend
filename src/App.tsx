@@ -4,6 +4,7 @@ import {Dashboard} from './features/Dashboard';
 import AuthRoutes from './features/Authentication/auth.routes';
 import { Fragment } from 'react/jsx-runtime';
 import Navbar from './common/component/Navbar';
+import EditProfile from './features/UserProfile/EditProfile';
 function App() {
 
   const {pathname} = useLocation();
@@ -12,9 +13,10 @@ function App() {
   return (
     <Fragment>
       {showNavbar && <Navbar />}
+      <AuthRoutes/>   
       <Routes>
         <Route path='/' element={<Dashboard />} />
-        <Route path='/*' element={<AuthRoutes />} />     
+        <Route path = '/user/edit' element={<EditProfile />} />
       </Routes>
     </Fragment>
 

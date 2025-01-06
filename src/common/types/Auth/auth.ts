@@ -22,6 +22,7 @@ export enum KeyMeta {
 }
 export type User = {
   username?: string | null;
+  userId?: string | null;
   access_token?: string | null;
   refresh_token?:string | null;
 }

@@ -50,10 +50,10 @@ const authService = {
                 return response;
         }),
         setUser: (data: Partial<User>, localSetterFn: (args: User) => void) => {
-                const { username, access_token, refresh_token } = data;
-                localStorage.setItem(KeyMeta.USER, JSON.stringify({ username }));
+                const { username, userId, access_token, refresh_token } = data;
+                localStorage.setItem(KeyMeta.USER, JSON.stringify({ username, userId }));
                 localStorage.setItem(KeyMeta.TOKEN, JSON.stringify({ access_token, refresh_token }));
-                localSetterFn({ username, access_token, refresh_token });
+                localSetterFn({ username, access_token, refresh_token, userId });
         },
         getUserMeta: (key: KeyMeta[]) => {
                 return key.reduce((data, e) => {

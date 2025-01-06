@@ -14,7 +14,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(prev => ({ ...prev, ...data }));
     }, []);
 
-    const { username, access_token, refresh_token } = user || {};
+    const { username, userId, access_token, refresh_token } = user || {};
 
     const login = async (data: LoginType): Promise<boolean> => {
         try {
@@ -35,7 +35,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         authService.removeUserMeta([KeyMeta.TOKEN, KeyMeta.USER]);
         setUser(null);
     };
-    const isUserValid = !!(username);
+    const isUserValid = !!(username || userId);
     const isTokenValid = !!(access_token && refresh_token);
 
     return (
@@ -43,8 +43,8 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
             login,
             logout,
             setUserMeta,
-            user: isUserValid ? { username } : null,
-            tokens: isTokenValid ? { access_token, refresh_token } : null
+            user: isUserValid ? { username, userId } : null,
+            tokens: isTokenValid ? { access_token, refresh_token } : null,
         }}>
             {children}
         </authContext.Provider>

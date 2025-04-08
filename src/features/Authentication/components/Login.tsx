@@ -20,7 +20,7 @@ const Login = () => {
 
     const onSubmit = async(form: LoginType) => {
         const isSubmitted = await login(form)
-        if(isSubmitted)navigate('/')
+        if(isSubmitted) navigate('/')
 
     }
 

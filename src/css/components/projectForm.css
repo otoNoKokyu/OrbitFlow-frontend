@@ -1,22 +1,59 @@
-.form-container {
-    display: flex;
-    justify-content: center;
-}
 
 .form-card {
     background: #ffffff;
-    padding: 40px;
+    padding: 20px;
     border-radius: 12px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-    width: 90%;
-    max-width: 450px;
     transition: transform 0.3s;
+    text-align: start;
+
+    label {
+        display: block;
+        font-size: 15px;
+        font-weight: 500;
+        font-family: Verdana, Geneva, Tahoma, sans-serif;
+        margin-bottom: 8px;
+        color: #0e0d0d; 
+    }
+    
+    input {
+        width: 100%;
+        padding: 12px;
+        font-size: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    
+    input:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    }
+    
+    button.submit-btn {
+        width: 100%;
+        padding: 12px;
+        background-color: rgb(22, 21, 21);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.3s;
+    }
+    
+    button.submit-btn:hover {
+        background-color: #424547;
+        transform: translateY(-2px); 
+    }
 }
 
-h2 {
-    text-align: center;
-    margin-bottom: 30px;
-    font-size: 1.8rem;
+h5 {
+    /* text-align: center; */
+    margin: 10px 0 30px 0;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    font-weight: normal;
+
+    font-size: 2rem;
     color: #333; 
 }
 
@@ -24,43 +61,7 @@ h2 {
     margin-bottom: 20px;
 }
 
-label {
-    display: block;
-    font-size: 1rem;
-    margin-bottom: 8px;
-    color: #555; 
-}
 
-input {
-    width: 100%;
-    padding: 12px;
-    font-size: 1rem;
-    border: 2px solid #ccc;
-    border-radius: 6px;
-    transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-input:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-}
-
-button.submit-btn {
-    width: 100%;
-    padding: 12px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.3s;
-}
-
-button.submit-btn:hover {
-    background-color: #0056b3;
-    transform: translateY(-2px); 
-}
 
 .error {
     color: red;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../common/hooks/useAuth";
 import TopBar from "./components/TopBar";
@@ -10,22 +10,20 @@ export const Dashboard = () => {
   const { user, tokens } = useAuth();
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     if (!tokens || !user) {
       navigate('/login');
-    } else {
-      setLoading(false);
     }
   }, [user, tokens, navigate]);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  if (!user || !tokens) return null
   return (
     <>
-      <TopBar name={user?.username?.[0].toUpperCase()!!} />
+      <TopBar
+        username={user?.username?.[0].toUpperCase()!!}
+        userId={user.user_id}
+        // projects={user.projects}
+      />
       <Sidebar />
       {/* <div className="project-container roboto-medium">
         <div className="project-container-header">

@@ -10,6 +10,7 @@ type ModalProps = {
 };
 
 const Modal: React.FC<ModalProps> = ({ closeModal, children }) => {
+  console.log(children)
   return (
     <div className='overlay'>
       <div className="modal-container">

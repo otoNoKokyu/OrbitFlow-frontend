@@ -1,7 +1,7 @@
 import { IResponse, isRespError } from "../common/types/global/response";
 type AsyncFunction<T,D=any> = (param?: D) => Promise<IResponse<T>>;
 
-export const asyncHandler =<T,D>(fn: AsyncFunction<T>) => {
+export const asyncHandler =<T=any,D=any>(fn: AsyncFunction<T>) => {
   return (param?: D): Promise<T> => {
       return fn(param)
         .then((result) => {

@@ -1,9 +1,8 @@
-import { LoginType } from "../../../features/Authentication/Model/auth.model";
+import { Login, LoginType } from "../../../features/Authentication/Model/auth.model";
 
 export interface ProviderProps {
-    user:  User | null,
-    tokens: {} | null,
-    setUserMeta: (data: User ) => void,
+    user:  any | null,
+    tokens: Login | null,
     login: (data: LoginType ) => Promise<boolean>,
     logout() :void,
 }
@@ -24,6 +23,11 @@ export type User = {
   username?: string | null;
   access_token?: string | null;
   refresh_token?:string | null;
+}
+export interface Role {
+  role_id: string;
+  isActive: boolean;
+  role: string
 }
 // export interface User {
 //   user_id: string;

@@ -19,7 +19,7 @@
     background-color: white;
     border-radius: 20px;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    text-align: center;
+    /* text-align: center; */
     padding: 20px; 
     position: relative;
     z-index: 1010;
@@ -43,11 +43,11 @@ i:hover{
 }
 
 .children {
-    display: flex;
+    /* display: flex;
     flex-direction: column; 
     justify-content: center;
     align-items: center;
-    height: auto; 
+    height: auto;  */
 }
 .close-button:hover {
     background-color: #ff4f3b;

@@ -11,7 +11,7 @@ interface ProjectFormData {
   lead_by: string;
 }
 
-const ProjectForm: React.FC = () => {
+const ProjectForm = ()  => {
   const { register, handleSubmit, formState: { errors } } = useForm<ProjectFormData>();
 
   const onSubmit = (data: ProjectFormData) => {
@@ -21,10 +21,10 @@ const ProjectForm: React.FC = () => {
   return (
     <div className="form-container">
       <div className="form-card">
-        <h2>Create or Edit Project</h2>
+        <h5>Create project</h5>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="form-group">
-            <label htmlFor="name">Project Name:</label>
+            <label htmlFor="name">name:</label>
             <input
               type="text"
               id="name"
@@ -35,7 +35,7 @@ const ProjectForm: React.FC = () => {
 
           <div className="date-picker-container">
             <div className="form-group">
-              <label htmlFor="start_date">Start Date:</label>
+              <label htmlFor="start_date">start:</label>
               <input
                 type="date"
                 id="start_date"
@@ -45,7 +45,7 @@ const ProjectForm: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="end_date">End Date:</label>
+              <label htmlFor="end_date">end:</label>
               <input
                 type="date"
                 id="end_date"
@@ -55,7 +55,7 @@ const ProjectForm: React.FC = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="min_issue_count">Min Issue Count:</label>
+            <label htmlFor="min_issue_count">minimum issue:</label>
             <input
               type="number"
               id="min_issue_count"
@@ -64,7 +64,7 @@ const ProjectForm: React.FC = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="lead_by">Lead:</label>
+            <label htmlFor="lead_by">lead:</label>
             <input
               type="text"
               id="lead_by"

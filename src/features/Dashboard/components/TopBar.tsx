@@ -9,15 +9,21 @@ import Modal from '../../../common/component/Modal'
 import { InviteEmail } from './InviteEmail'
 import authService from '../../Authentication/service/auth.service'
 import { RoleEnum } from '../../../common/types/Auth/auth'
+import ProjectForm from './Project'
+import { Project } from '../Model/project.model'
+import { selectConverter } from '../../../utility/objectUtils'
 type Props = {
-    name: string
+    username: string,
+    userId: string;
 }
-const TopBar: FC<Props> = ({ name = 'AC' }) => {
-    const [projects, setProjects] = useState<{ id: string; label: string }[]>([]);
+const TopBar: FC<Props> = ({ username = 'AC',userId }) => {
+    const [projects, setProjects] = useState<Project[]>([]);
     const [modal, showModal] = useState(false)
+    const [modalChild, setModalChild] = useState<React.ReactNode>();
+
     const dropDownExtraNode = (
         <button className='topbar-dropdown'
-        onClick={() => alert('coming soon')}>
+            onClick={() => openModal('create')}>
             <span>Create Project</span>
             <FontAwesomeIcon icon={faPlus} />
         </button>
@@ -27,14 +33,21 @@ const TopBar: FC<Props> = ({ name = 'AC' }) => {
         showModal(false)
     }
     const dropdownClickHandler = async () => {
-        const projects = await projectService.fetchProjects()
-        const projectNames = projects.map((e: { name: string; id: string }) => ({
-            label: e.name,
-            id: e.id,
-        }));
-        setProjects(projectNames)
+        const projects = await projectService.fetchUserProjects(userId)
+        console.log(projects)
+        setProjects(projects)
     }
-
+    const openModal = (type: 'create' | 'Invite') => {
+        showModal(true)
+        if (type === 'Invite') setModalChild(<InviteEmail
+            submitFn={submitFn}
+            projects={projects}
+            userId ={userId}
+        />)
+        else setModalChild(
+            <ProjectForm />
+        )
+    }
     return (
         <>
             <div className='topbar-container'>
@@ -42,16 +55,17 @@ const TopBar: FC<Props> = ({ name = 'AC' }) => {
                     <Dropdown
                         extraNode={dropDownExtraNode}
                         title='Projects'
-                        children={projects.reverse()}
+                        children={selectConverter(projects, (x) => x.id, (x) => x.name)}
                         onLabelClick={dropdownClickHandler}
                     />
-                    <button onClick={() => showModal(true)}>
+                    <button onClick={() => openModal('Invite')}>
                         Invite
                     </button>
-                    <button>
+                    <button >
                         Issues
                     </button>
-                    <button className='create'>
+                    <button
+                        className='create'>
                         Create
                     </button>
                 </div>
@@ -73,9 +87,8 @@ const TopBar: FC<Props> = ({ name = 'AC' }) => {
                         to="#">
                         <div
                             style={{ color: 'white', background: 'blue', textDecoration: 'none', fontWeight: 'bolder' }}
-
                         >
-                            {name}
+                            {username}
                         </div>
                     </NavLink>
 
@@ -83,12 +96,7 @@ const TopBar: FC<Props> = ({ name = 'AC' }) => {
             </div>
             {modal &&
                 <Modal
-                    children={
-                        <InviteEmail
-                            submitFn={submitFn}
-                            projects={projects}
-                        />
-                    }
+                    children={modalChild}
                     closeModal={() => showModal(false)}
                 />
             }

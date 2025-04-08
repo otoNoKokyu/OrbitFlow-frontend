@@ -44,18 +44,17 @@ const authService = {
                 return response;
         }),
         getMe: asyncHandler(async (): Promise<IResponse<any>> => {
-                const response: IResponse<any> = await Instance.get(`/auth/me`)
+                const response: IResponse<any> = await Instance.get(`/user/me`)
                 return response;
         }),
         inviteUser: asyncHandler(async ({ email, pId, role }: { role: RoleEnum; pId: string; email: string }): Promise<IResponse<string>> => {
-                const response: IResponse<any> = await Instance.post(`/auth/invite?role=${role}&pId=${pId}`, { email });
+                const response: IResponse<any> = await Instance.post(`/auth/invite?roleId=${role}&pId=${pId}`, { email });
                 return response;
         }),
-        setUser: (data: Partial<User>, localSetterFn: (args: User) => void) => {
-                const { username, access_token, refresh_token } = data;
-                localStorage.setItem(KeyMeta.USER, JSON.stringify({ username }));
+        persistTokens: (data: Partial<User>) => {
+                const { access_token, refresh_token } = data;
+                // localStorage.setItem(KeyMeta.USER, JSON.stringify({ username }));
                 localStorage.setItem(KeyMeta.TOKEN, JSON.stringify({ access_token, refresh_token }));
-                localSetterFn({ username, access_token, refresh_token });
         },
         getUserMeta: (key: KeyMeta[]) => {
                 return key.reduce((data, e) => {

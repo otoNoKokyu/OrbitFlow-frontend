@@ -41,7 +41,7 @@ const GenericSelect: React.FC<GenericSelectProps> = ({
         } else {
             setSelectedOptions([option]);
             onChange(option);
-            setIsOpen(false); // Close dropdown on selection for single select
+            setIsOpen(false);
         }
     };
 

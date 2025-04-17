@@ -8,6 +8,7 @@ import '../../css/pages/dashboard.css'
 
 export const Dashboard = () => {
   const { user, tokens } = useAuth();
+  console.log(123,user)
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,11 +20,11 @@ export const Dashboard = () => {
   if (!user || !tokens) return null
   return (
     <>
-      <TopBar
+      {/* <TopBar
         username={user?.username?.[0].toUpperCase()!!}
         userId={user.user_id}
         // projects={user.projects}
-      />
+      /> */}
       <Sidebar />
       {/* <div className="project-container roboto-medium">
         <div className="project-container-header">

@@ -11,24 +11,19 @@ import { validateEmail } from '../../../utility/validator';
 const Login = () => {
     const {login,user,tokens} = useAuth()
     const navigate = useNavigate()
-
     useEffect(()=>{
         if(user && tokens) navigate('/')
     },[])
 
     const { register, handleSubmit, formState: { errors } } = useForm<LoginType>();
-
     const onSubmit = async(form: LoginType) => {
         const isSubmitted = await login(form)
         if(isSubmitted) navigate('/')
-
     }
-
     return (
         <div className='login-container'>
             <div className='login-heading'>
                 <h1>Welcome back</h1>
-
             </div>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div>
@@ -53,12 +48,8 @@ const Login = () => {
             <div className="signup-redirect">
                 <p>Don't have an account?</p>
                 <Link to='/register'>Click here</Link>
-            </div>
-            
+            </div>  
         </div>
     )
 }
-
-
-
 export default Login

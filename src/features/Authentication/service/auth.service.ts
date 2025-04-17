@@ -39,12 +39,13 @@ const authService = {
                 return response;
         }),
         sendOtp: asyncHandler(async ({ email, resend = false }: { email: string, resend: boolean }): Promise<IResponse<sendOtp>> => {
-                console.log(email, resend)
                 const response: IResponse<sendOtp> = await Instance.post(`/auth/sendOtp`, { resend, email })
                 return response;
         }),
         getMe: asyncHandler(async (): Promise<IResponse<any>> => {
                 const response: IResponse<any> = await Instance.get(`/user/me`)
+                const {responsePayload:{data:{username,user_id}}} = response
+                localStorage.setItem(KeyMeta.USER,JSON.stringify({username,user_id}))
                 return response;
         }),
         inviteUser: asyncHandler(async ({ email, pId, role }: { role: RoleEnum; pId: string; email: string }): Promise<IResponse<string>> => {
@@ -53,13 +54,13 @@ const authService = {
         }),
         persistTokens: (data: Partial<User>) => {
                 const { access_token, refresh_token } = data;
-                // localStorage.setItem(KeyMeta.USER, JSON.stringify({ username }));
                 localStorage.setItem(KeyMeta.TOKEN, JSON.stringify({ access_token, refresh_token }));
         },
         getUserMeta: (key: KeyMeta[]) => {
                 return key.reduce((data, e) => {
                         const storedItem = localStorage.getItem(e);
-                        if (storedItem) return { ...data, ...JSON.parse(storedItem) };
+                        console.log('storedItem',storedItem)
+                        if (storedItem) {return { ...data, ...JSON.parse(storedItem) }};
                         return data
                 }, {} as User);
         },

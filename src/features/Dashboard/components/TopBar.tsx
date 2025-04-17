@@ -34,7 +34,6 @@ const TopBar: FC<Props> = ({ username = 'AC',userId }) => {
     }
     const dropdownClickHandler = async () => {
         const projects = await projectService.fetchUserProjects(userId)
-        console.log(projects)
         setProjects(projects)
     }
     const openModal = (type: 'create' | 'Invite') => {

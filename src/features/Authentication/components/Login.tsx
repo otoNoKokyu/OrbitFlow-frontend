@@ -6,20 +6,34 @@ import { useAuth } from '../../../common/hooks/useAuth';
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { validateEmail } from '../../../utility/validator';
-
+import { login } from '@/store/auth/authThunk';
+import { useAppDispatch,useAppSelector } from '@/store';
+import authService from '../service/auth.service';
+import { isEmptyObject } from '@/utility/objectUtils';
 
 const Login = () => {
-    const {login,user,tokens} = useAuth()
+    const {user,tokens} = useAppSelector((state)=>state.auth)
+    const dispatch = useAppDispatch()
     const navigate = useNavigate()
     useEffect(()=>{
-        if(user && tokens) navigate('/')
-    },[])
+        if(!authService.checkForEmptyUserState([user,tokens])) {
+            navigate('/')
+        }
+        }, []);
 
+    if(!authService.checkForEmptyUserState([user,tokens])) return null
     const { register, handleSubmit, formState: { errors } } = useForm<LoginType>();
-    const onSubmit = async(form: LoginType) => {
-        const isSubmitted = await login(form)
-        if(isSubmitted) navigate('/')
-    }
+    const onSubmit = async (form: LoginType) => {
+        try {
+          const loginResults = await dispatch(login(form)).unwrap();
+          if (loginResults) {
+            navigate('/');
+          }
+        } catch (err) {
+          console.error("Login failed:", err);
+          // toast / error handling here
+        }
+      }
     return (
         <div className='login-container'>
             <div className='login-heading'>

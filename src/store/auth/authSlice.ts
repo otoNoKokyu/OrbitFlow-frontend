@@ -1,12 +1,10 @@
-import { KeyMeta } from '@/common/types/Auth/auth';
+import { KeyMeta, User } from '@/common/types/Auth/auth';
 import { Login } from '@/features/Authentication/Model/auth.model';
 import authService from '@/features/Authentication/service/auth.service';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { login } from './authThunk';
-
 
 interface AuthState {
-  user: { username: string; user_id: string } | null;
+  user: Partial<User> | null;
   tokens: Login | null;
   loading: boolean;
   error: string | null;
@@ -35,22 +33,6 @@ const authSlice = createSlice({
       authService.persistTokens(action.payload);
       state.tokens = action.payload;
     },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(login.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(login.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = action.payload.user;
-        state.tokens = action.payload.tokens;
-      })
-      .addCase(login.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      });
   },
 });
 

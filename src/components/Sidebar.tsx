@@ -22,7 +22,7 @@ const sidebarItems: SidebarItem[] = [
 
 const Sidebar = () => {
   return (
-    <aside className="w-64 h-screen bg-muted border-r p-4">
+    <aside className="w-64 h-screen bg-muted border-r py-3 px-4">
       <h2 className="text-lg font-semibold mb-6">JIRA Clone</h2>
       <nav className="space-y-1">
         {sidebarItems.map((item, index) => (

@@ -1,21 +1,21 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { LoginType } from '@/features/Authentication/Model/auth.model';
 import authService from '@/features/Authentication/service/auth.service';
+import { setTokens } from './authSlice';
+
 
 export const login = createAsyncThunk(
   'auth/login',
-  async (credentials: LoginType, { rejectWithValue }) => {
+  async (credentials: LoginType, { rejectWithValue, dispatch }) => {
     try {
       const tokens = await authService.callLogin(credentials);
       if (!tokens.access_token) return rejectWithValue('No access token');
       authService.persistTokens(tokens);
-      const userResponse = await authService.getMe();
-      const {
-        responsePayload: { data: user },
-      } = userResponse;
-      return { user, tokens };
+      dispatch(setTokens(tokens))
+      const {username,user_id} = await authService.getMe();
+      return { user:{username,user_id}, tokens };
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Login failed');
+      rejectWithValue(error.message || 'Login failed');
     }
   }
 );

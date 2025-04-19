@@ -7,3 +7,7 @@ export const selectConverter = <T extends object>(data: Array<T>, idCb: cb<T>, l
         }
     })
 }
+export const isEmptyObject = (data: object) => {
+    if (!data) return true
+    else return Object.entries(data)?.length ? false : true
+}

@@ -4,6 +4,7 @@ import { IResponse } from '../../../common/types/global/response';
 import { Instance } from '../../../interceptor/Instance';
 import { asyncHandler } from '../../../utility/asyncHandler'
 import { Login, sendOtp, Signup, LoginType } from '../Model/auth.model';
+import { isEmptyObject } from '@/utility/objectUtils';
 
 
 const authService = {
@@ -42,6 +43,14 @@ const authService = {
                 const response: IResponse<sendOtp> = await Instance.post(`/auth/sendOtp`, { resend, email })
                 return response;
         }),
+        checkForEmptyUserState : (data: any[]) => {
+          let indic = false
+          data.forEach(e=> {
+                if(isEmptyObject(e)) indic = true
+                return
+        })
+          return indic
+        },
         getMe: asyncHandler(async (): Promise<IResponse<any>> => {
                 const response: IResponse<any> = await Instance.get(`/user/me`)
                 const {responsePayload:{data:{username,user_id}}} = response
@@ -62,7 +71,7 @@ const authService = {
                         console.log('storedItem',storedItem)
                         if (storedItem) {return { ...data, ...JSON.parse(storedItem) }};
                         return data
-                }, {} as User);
+                }, {} as Partial<User>);
         },
         removeUserMeta: (key: KeyMeta[]) => key.forEach(K => localStorage.removeItem(K))
 }

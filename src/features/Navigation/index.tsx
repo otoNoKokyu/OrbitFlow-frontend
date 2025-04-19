@@ -1,23 +1,21 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../common/hooks/useAuth";
 import TopBar from "./components/TopBar";
 import Sidebar from "./components/Sidebar";
 import '../../css/pages/dashboard.css'
+import { useAppSelector } from "@/store";
+import authService from "../Authentication/service/auth.service";
 
 
-export const Dashboard = () => {
-  const { user, tokens } = useAuth();
-  console.log(123,user)
+export const Navigation = () => {
+  const {user,tokens} = useAppSelector((state)=>state.auth)
   const navigate = useNavigate();
-
   useEffect(() => {
-    if (!tokens || !user) {
-      navigate('/login');
-    }
-  }, [user, tokens, navigate]);
-
-  if (!user || !tokens) return null
+    if (authService.checkForEmptyUserState([user,tokens]))  {
+      navigate('/login')
+    };
+  }, []);
+  if (authService.checkForEmptyUserState([user,tokens])) return null
   return (
     <>
       {/* <TopBar

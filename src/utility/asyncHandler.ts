@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import { IResponse, isRespError } from "../common/types/global/response";
 type AsyncFunction<T,D=any> = (param?: D) => Promise<IResponse<T>>;
 
@@ -8,9 +9,9 @@ export const asyncHandler =<T=any,D=any>(fn: AsyncFunction<T>) => {
           return result.responsePayload.data})
         .catch((error: unknown) => {
           if (isRespError(error)) {
-            alert(`${error.error}: ${error.message}`);
+            toast.error(error.message,{style:{height:'100px',maxWidth: '400px', padding:"25px",fontSize:'medium'}});
           } else {
-            alert('An unexpected error occurred.');
+            toast('An unexpected error occurred.');
           }
           throw error;
         });

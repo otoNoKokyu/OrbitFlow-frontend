@@ -21,7 +21,6 @@ const Login = () => {
         }
         }, []);
 
-    if(!authService.checkForEmptyUserState([user,tokens])) return null
     const { register, handleSubmit, formState: { errors } } = useForm<LoginType>();
     const onSubmit = async (form: LoginType) => {
         try {

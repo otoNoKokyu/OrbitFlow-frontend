@@ -1,6 +1,8 @@
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
 import { IResponse } from '../common/types/global/response';
 
+import { startLoading, stopLoading } from '../store/rootReducer'; // path to rootReducer where actions are defined
+import { store } from '@/store';
 
 enum ExcludedEndpoint {
   LOGIN = '/signin',
@@ -23,8 +25,8 @@ const isExcludedEndpoint = (url: string | undefined): boolean => {
 
 Instance.interceptors.request.use(
   (config) => {
-    if (isExcludedEndpoint(config.url)) {
-      return config;
+    if (!isExcludedEndpoint(config.url)) {
+      store.dispatch(startLoading());
     }
 
     const tokens = localStorage.getItem('tokens')
@@ -38,18 +40,22 @@ Instance.interceptors.request.use(
     return config;
   },
   (error) => {
+    store.dispatch(stopLoading());
     return Promise.reject(error);
   }
 );
 
 Instance.interceptors.response.use(
   (response): IResponse => {
+    store.dispatch(stopLoading());
     const { data, status } = response;
     return { responsePayload: data, statusCode: status };
   },
-
   async (error): Promise<AxiosResponse<Pick<IResponse, 'error' | 'message'>, any>> => {
-    const request = error.config!!
+    store.dispatch(stopLoading());
+
+    const request = error.config!!;
+
     if (error.response?.status === 401 && !request?.baseURL?.endsWith('/token')) {
       const tokens = localStorage.getItem('tokens')
         ? JSON.parse(localStorage.getItem('tokens')!)
@@ -57,9 +63,12 @@ Instance.interceptors.response.use(
 
       if (tokens?.refresh_token) {
         try {
-          const {responsePayload,statusCode}:IResponse = await Instance.post('/auth/token', {
+          store.dispatch(startLoading());
+          const { responsePayload, statusCode }: IResponse = await Instance.post('/auth/token', {
             token: tokens.refresh_token,
           });
+          store.dispatch(stopLoading());
+
           if (statusCode === 200) {
             localStorage.setItem('tokens', JSON.stringify(responsePayload.data));
             Instance.defaults.headers.common.Authorization = `Bearer ${responsePayload.data.access_token}`;
@@ -67,10 +76,12 @@ Instance.interceptors.response.use(
             return Instance(request);
           }
         } catch (refreshError) {
+          store.dispatch(stopLoading());
           console.error('Token refresh failed:', refreshError);
         }
       }
     }
+
     throw {
       error: error.response?.data?.error || 'Unknown error',
       message: error.response?.data?.message || 'An unexpected error occurred',

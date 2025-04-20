@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -16,50 +16,204 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-
-type Row = {
-  id: string;
-  content: string;
-};
+import { Issue } from '../Model/Issue';
+import TaskGrid from './Issue';
+import { Plus, PlusCircle } from 'lucide-react';
+import { useAppSelector } from '@/store';
+import { fetchUserDashboardData } from '../service/dashboard.service';
 
 type Column = {
   id: string;
   title: string;
-  rows: Row[];
+  assignments: Issue[];
 };
 
 type Board = Column[];
 
-// Dummy data initialization
+// Dummy data initialization with assignment cards
 const initialBoard: Board = [
   {
     id: 'col-1',
-    title: 'Column 1',
-    rows: Array.from({ length: 5 }, (_, i) => ({
-      id: `col-1-row-${i + 1}`,
-      content: `Row ${i + 1}`,
-    })),
+    title: 'To Do',
+    assignments: [
+      {
+        id: 'col-1-assignment-1',
+        name: 'Homepage Design Wireframe',
+        description: 'Create wireframes for the homepage design',
+        projectIssueId: 'PROJ-001',
+        remaining: '4d',
+        assignee: 'JD',
+        priority: 'Low',
+        dueDate: '02 Nov 2025',
+        comments: [
+          {}, {}, {}, {}  // 4 comments
+        ],
+      },
+      {
+        id: 'col-1-assignment-2',
+        name: 'User Research Survey',
+        description: 'Prepare and distribute user research survey',
+        projectIssueId: 'PROJ-002',
+        remaining: '7d',
+        assignee: 'JD',
+        priority: 'Medium',
+        dueDate: '05 Nov 2025',
+        comments: [
+          {}, {}  // 2 comments
+        ],
+      },
+    ],
   },
   {
     id: 'col-2',
-    title: 'Column 2',
-    rows: Array.from({ length: 5 }, (_, i) => ({
-      id: `col-2-row-${i + 1}`,
-      content: `Row ${i + 1}`,
-    })),
+    title: 'In Progress',
+    assignments: [
+      {
+        id: 'col-2-assignment-1',
+        name: 'API Documentation',
+        description: 'Document all API endpoints and parameters',
+        projectIssueId: 'PROJ-003',
+        remaining: '1d',
+        assignee: 'KL',
+        priority: 'High',
+        dueDate: '29 Oct 2025',
+        comments: [
+          {}, {}, {}, {}, {}, {}, {}
+        ],
+      },
+      {
+        id: 'col-2-assignment-2',
+        name: 'Frontend Components',
+        description: 'Develop reusable frontend components',
+        projectIssueId: 'PROJ-004',
+        remaining: '3d',
+        assignee: 'AM',
+        priority: 'Medium',
+        dueDate: '01 Nov 2025',
+        comments: [
+          {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}  // 12 comments
+        ],
+      },
+    ],
+  },
+  {
+    id: 'col-4',
+    title: 'On Review',
+    assignments: [
+      {
+        id: 'col-4-assignment-1',
+        name: 'Authentication Flow',
+        description: 'Implement user authentication flow',
+        projectIssueId: 'PROJ-005',
+        remaining: '2d',
+        assignee: 'AM',
+        priority: 'High',
+        dueDate: '28 Oct 2025',
+        comments: [
+          {}, {}, {}, {}, {}, {}  // 6 comments
+        ],
+      },
+      {
+        id: 'col-4-assignment-2',
+        name: 'User Profile Settings',
+        description: 'Implement user profile settings page',
+        projectIssueId: 'PROJ-006',
+        remaining: '1d',
+        assignee: 'JD',
+        priority: 'Medium',
+        dueDate: '30 Oct 2025',
+        comments: [
+          {}, {}, {}, {}, {}, {}, {}, {}  // 8 comments
+        ],
+      },
+      {
+        id: 'col-4-assignment-3',
+        name: 'Payment Integration',
+        description: 'Integrate payment processing system',
+        projectIssueId: 'PROJ-007',
+        remaining: '1d',
+        assignee: 'PQ',
+        priority: 'Urgent',
+        dueDate: '01 Nov 2025',
+        comments: [
+          {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}  // 14 comments
+        ],
+      },
+    ],
   },
   {
     id: 'col-3',
-    title: 'Column 3',
-    rows: Array.from({ length: 5 }, (_, i) => ({
-      id: `col-3-row-${i + 1}`,
-      content: `Row ${i + 1}`,
-    })),
+    title: 'Done',
+    assignments: [
+      {
+        id: 'col-3-assignment-1',
+        name: 'Project Setup',
+        description: 'Initialize project repository and setup development environment',
+        projectIssueId: 'PROJ-008',
+        remaining: '0d',
+        assignee: 'JD',
+        priority: 'Urgent',
+        dueDate: '20 Oct 2025',
+        comments: [
+          {}, {}, {}  // 3 comments
+        ],
+      },
+      {
+        id: 'col-3-assignment-2',
+        name: 'Requirements Gathering',
+        description: 'Collect and document project requirements',
+        projectIssueId: 'PROJ-009',
+        remaining: '0d',
+        assignee: 'RB',
+        priority: 'High',
+        dueDate: '15 Oct 2025',
+        comments: [
+          {}, {}, {}, {}, {}, {}, {}, {}, {}  // 9 comments
+        ],
+      },
+    ],
   },
 ];
 
-// Sortable Row Component
-function SortableRow({ row }: { row: Row }) {
+function transformApiToBoard(apiResponse: { data: Issue[]; }, columns = null) {
+  console.log(apiResponse)
+  const issues = apiResponse.data;
+  
+  // Use provided columns or create default
+  const board = columns || [
+    { id: 'col-1', title: 'To Do', assignments: [] },
+    { id: 'col-2', title: 'In Progress', assignments: [] },
+    { id: 'col-4', title: 'On Review', assignments: [] },
+    { id: 'col-3', title: 'Done', assignments: [] }
+  ];
+  
+  // Format date helper
+  const fmtDate = (d:string) => new Date(d).toLocaleDateString('en-GB', {day: '2-digit', month: 'short', year: 'numeric'});
+  
+  // Map issues to columns (simple distribution)
+  issues.forEach((issue: Issue, i:number) => {
+    const colIndex = i % board.length;
+    const col = board[colIndex];
+    
+    col.assignments.push({
+      id: `${col.id}-assignment-${col.assignments.length + 1}`,
+      name: issue.description || `Task ${i+1}`,
+      description: issue.description || '',
+      projectIssueId: issue.projectIssueId || `PROJ-${String(i+1).padStart(3, '0')}`,
+      remaining: issue.remaining ? `${issue.remaining}d` : '0d',
+      assignee: issue.assignee.username.substring(0, 2),
+      priority: issue.priority,
+      dueDate: fmtDate(issue.dueDate),
+      comments: issue.comments.length ? issue.comments : Array(3).fill({})
+    });
+  });
+  
+  return board;
+}
+
+
+// Sortable Assignment Component
+function SortableAssignment({ assignment }: { assignment: Issue }) {
   const {
     attributes,
     listeners,
@@ -67,23 +221,18 @@ function SortableRow({ row }: { row: Row }) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: row.id });
+  } = useSortable({ id: assignment.id });
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
-    padding: 8,
-    margin: '4px 0',
-    backgroundColor: isDragging ? '#d1eaff' : '#fff',
-    border: '1px solid #ccc',
-    borderRadius: 4,
-    cursor: 'grab',
-    userSelect: 'none',
+    opacity: isDragging ? 0.8 : 1,
+    zIndex: isDragging ? 1 : 0,
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      {row.content}
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="mb-3">
+      <TaskGrid assignment={assignment} />
     </div>
   );
 }
@@ -96,20 +245,24 @@ function ColumnComponent({ column }: { column: Column }) {
         backgroundColor: '#f8f8f8',
         padding: 16,
         borderRadius: 8,
-        minWidth: 200,
+        minWidth: 280,
         margin: 8,
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
       }}
     >
-      <h3 style={{ textAlign: 'center' }}>{column.title}</h3>
+      <div className="flex justify-between">
+        <h3 className="text-medium font-sans font-medium text-center mb-4">{column.title}</h3>
+        <span className="mx-4 text-md text-grey-200">{column.assignments.length}</span>
+        <Plus className="ml-auto mr-1 text-right" />
+      </div>
       <SortableContext
-        items={column.rows.map((row) => row.id)}
+        items={column.assignments.map((assignment) => assignment.id)}
         strategy={verticalListSortingStrategy}
       >
-        {column.rows.map((row) => (
-          <SortableRow key={row.id} row={row} />
+        {column.assignments.map((assignment) => (
+          <SortableAssignment key={assignment.id} assignment={assignment} />
         ))}
       </SortableContext>
     </div>
@@ -119,37 +272,48 @@ function ColumnComponent({ column }: { column: Column }) {
 // Main Board Component
 export default function DnDKitBoard() {
   const [board, setBoard] = useState<Board>(initialBoard);
-  const [activeRowId, setActiveRowId] = useState<string | null>(null);
+  const [activeAssignmentId, setActiveAssignmentId] = useState<string | null>(null);
+  const userId = useAppSelector(state=>state.auth.user?.user_id)
+
+useEffect(()=>{
+  const fetchUserDashBoard = async(userId:string)=>{
+    return await fetchUserDashboardData(userId)
+  } 
+  fetchUserDashBoard(userId!).then(res=>{
+    setBoard(transformApiToBoard(res.responsePayload))
+  })
+})
+
 
   // Sensors for pointer (mouse/touch) input
   const sensors = useSensors(useSensor(PointerSensor));
 
-  // Find column by row id helper
-  const findColumnByRowId = (rowId: string) =>
-    board.find((col) => col.rows.some((row) => row.id === rowId));
+  // Find column by assignment id helper
+  const findColumnByAssignmentId = (assignmentId: string) =>
+    board.find((col) => col.assignments.some((assignment) => assignment.id === assignmentId));
 
-  // Find row by id helper
-  const findRowById = (rowId: string): Row | undefined => {
-    const col = findColumnByRowId(rowId);
-    return col?.rows.find((row) => row.id === rowId);
+  // Find assignment by id helper
+  const findAssignmentById = (assignmentId: string): Issue | undefined => {
+    const col = findColumnByAssignmentId(assignmentId);
+    return col?.assignments.find((assignment) => assignment.id === assignmentId);
   };
 
-  // Drag start - set active row id
+  // Drag start - set active assignment id
   const handleDragStart = (event: DragStartEvent) => {
-    setActiveRowId(event.active.id as string);
+    setActiveAssignmentId(event.active.id as string);
   };
 
-  // Drag end - reorder or move rows
+  // Drag end - reorder or move assignments
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (!over) {
-      setActiveRowId(null);
+      setActiveAssignmentId(null);
       return;
     }
 
     if (active.id === over.id) {
-      setActiveRowId(null);
+      setActiveAssignmentId(null);
       return;
     }
 
@@ -157,47 +321,48 @@ export default function DnDKitBoard() {
     const overId = over.id as string;
 
     const sourceColIndex = board.findIndex((col) =>
-      col.rows.some((row) => row.id === activeId)
+      col.assignments.some((assignment) => assignment.id === activeId)
     );
     const destColIndex = board.findIndex((col) =>
-      col.rows.some((row) => row.id === overId)
+      col.assignments.some((assignment) => assignment.id === overId)
     );
 
     if (sourceColIndex === -1 || destColIndex === -1) {
-      setActiveRowId(null);
+      setActiveAssignmentId(null);
       return;
     }
 
     const sourceCol = board[sourceColIndex];
     const destCol = board[destColIndex];
 
-    const sourceRowIndex = sourceCol.rows.findIndex((row) => row.id === activeId);
-    const destRowIndex = destCol.rows.findIndex((row) => row.id === overId);
+    const sourceAssignmentIndex = sourceCol.assignments.findIndex((assignment) => assignment.id === activeId);
+    const destAssignmentIndex = destCol.assignments.findIndex((assignment) => assignment.id === overId);
 
     if (sourceColIndex === destColIndex) {
       // Reorder within the same column
-      const newRows = arrayMove(sourceCol.rows, sourceRowIndex, destRowIndex);
+      const newAssignments = arrayMove(sourceCol.assignments, sourceAssignmentIndex, destAssignmentIndex);
       const newBoard = [...board];
-      newBoard[sourceColIndex] = { ...sourceCol, rows: newRows };
+      newBoard[sourceColIndex] = { ...sourceCol, assignments: newAssignments };
       setBoard(newBoard);
-      setActiveRowId(null);
+      setActiveAssignmentId(null);
       return;
     }
 
-    // Move row between columns
+    // Move assignment between columns
     const newBoard = [...board];
 
     // Remove from source
-    const [movedRow] = newBoard[sourceColIndex].rows.splice(sourceRowIndex, 1);
+    const [movedAssignment] = newBoard[sourceColIndex].assignments.splice(sourceAssignmentIndex, 1);
 
     // Insert into destination
-    newBoard[destColIndex].rows.splice(destRowIndex, 0, movedRow);
+    newBoard[destColIndex].assignments.splice(destAssignmentIndex, 0, movedAssignment);
 
     setBoard(newBoard);
-    setActiveRowId(null);
+    setActiveAssignmentId(null);
   };
 
-  const activeRow = activeRowId ? findRowById(activeRowId) : null;
+  const activeAssignment = activeAssignmentId ? findAssignmentById(activeAssignmentId) : null;
+  console.log(activeAssignment)
 
   return (
     <DndContext
@@ -214,6 +379,8 @@ export default function DnDKitBoard() {
           padding: 24,
           height: '100%',
           boxSizing: 'border-box',
+          // maxWidth: '1400px',
+          margin: '0 auto',
         }}
       >
         {board.map((column) => (
@@ -222,18 +389,9 @@ export default function DnDKitBoard() {
       </div>
 
       <DragOverlay>
-        {activeRow ? (
-          <div
-            style={{
-              padding: 8,
-              backgroundColor: '#d1eaff',
-              border: '1px solid #90caf9',
-              borderRadius: 4,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-              userSelect: 'none',
-            }}
-          >
-            {activeRow.content}
+        {activeAssignment ? (
+          <div style={{ width: '280px' }}>
+            <TaskGrid assignment={activeAssignment} />
           </div>
         ) : null}
       </DragOverlay>

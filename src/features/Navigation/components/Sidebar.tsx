@@ -45,7 +45,6 @@ const Sidebar: FC<Props> = ({ collapsed, handleCollapse }) => {
   return (
     <aside className={`fixed top-0 left-0 transition-all duration-500 ${collapsed ? 'w-20' : 'w-64'} bg-[#f8f8f8] h-screen p-4 flex flex-col`}>
       
-      {/* Top Logo / Avatar */}
       <div className="flex justify-between items-center mb-4">
         {!collapsed && <img src="/icon.jpg" alt="icon" style={{ width: 55, height: 55 }} />}
         <div className="rounded-full h-[55px] w-[55px] flex justify-center items-center bg-[#f1eaea] text-sm shrink-0">
@@ -53,14 +52,12 @@ const Sidebar: FC<Props> = ({ collapsed, handleCollapse }) => {
         </div>
       </div>
       
-      {/* Collapse Button */}
       <div className="flex justify-end mb-4">
         <Button variant="ghost" size="icon" onClick={() => handleCollapse(!collapsed)}>
           <FontAwesomeIcon icon={collapsed ? faArrowRight : faArrowLeft} />
         </Button>
       </div>
       
-      {/* Search Bar */}
       {!collapsed && (
         <div className="relative mb-6 px-1">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
@@ -84,7 +81,7 @@ const Sidebar: FC<Props> = ({ collapsed, handleCollapse }) => {
             to={item.path}
             className={({ isActive }) => `
               w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors
-              ${isActive || (index === 0 && (pathname === "/" || pathname === "")) ? "bg-gray-200 text-gray-900 font-medium" : "text-gray-600 hover:bg-gray-50"}
+              ${isActive || (index === 0 && (pathname === "/" || pathname === "")) ? " text-gray-900 font-medium" : "text-gray-600 hover:bg-gray-50"}
               ${collapsed ? "justify-center" : ""}
             `}
           >

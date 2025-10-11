@@ -14,9 +14,7 @@ const ErrorHandler: FC<props> = ({ text, fontSize,classnames }) => {
   return (
     <div
       className={classNames('error-handler',classnames)}>
-      <span
-        style={{ fontSize: fontSize ?? '15px' }}
-      >
+      <span>
         <FontAwesomeIcon
           color={'red'}
           size={"lg"}

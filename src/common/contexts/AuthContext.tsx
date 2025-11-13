@@ -10,8 +10,6 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<any>(()=>authService.getUserMeta([KeyMeta.USER]));
     const [tokens, setTokens] = useState(() => authService.getUserMeta([KeyMeta.TOKEN]) as Login)
 
-    console.log('user',user)
-
     const login = async (data: LoginType): Promise<boolean> => {
         try {
             const response = await authService.callLogin(data);
@@ -41,7 +39,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     return (
         <authContext.Provider value={{
             login,
-            logout,
+            logout: logout,
             user: isUserValid ? user : null,
             tokens: isTokenValid ? tokens : null
         }}>

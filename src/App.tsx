@@ -10,7 +10,9 @@ import DnDKitBoard from './features/Dashboard/components';
 import { useSelector } from 'react-redux';
 import { RootState } from './store';
 import { FullscreenSpinner } from './components/ui/spinner';
-import Oye from './features/Dashboard/components/Oye';
+import Header from './features/Issues/components/Header';
+import JiraIssueDetail from './features/Issues/components/IssueView';
+import CreateIssueDemo from './features/Issues/components/Create';
 function App() {
   const loading = useSelector((state: RootState) => state.loading.count > 0);
   if (loading) return <FullscreenSpinner />
@@ -19,7 +21,9 @@ function App() {
       <Routes>
         <Route path='' element={<Navigation />}>
           <Route path='dashboard' element={<DnDKitBoard />} />
-          <Route path='tasks' element={<Oye />} />
+          <Route path='issues' element={<Header />} />
+          <Route path='issues' element={<Header />} />
+          <Route path='issue' element={<CreateIssueDemo />} />
         </Route>
         <Route path='/*' element={<AuthRoutes />} />
       </Routes>

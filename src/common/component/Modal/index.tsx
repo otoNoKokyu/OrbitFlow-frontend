@@ -1,27 +1,28 @@
 import React from 'react';
-import '../../../css/components/Modal.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark } from '@fortawesome/free-solid-svg-icons';
+import { Dialog, DialogContent} from "@/components/ui/dialog";
 
 type ModalProps = {
   submitFn?: () => void;
-  closeModal: () => void;
+  closeModal?: () => void;
   children: React.ReactNode;
 };
 
 const Modal: React.FC<ModalProps> = ({ closeModal, children }) => {
-  console.log(children)
+  const [open, setOpen] = React.useState(true);
+
+  const handleClose = () => {
+    setOpen(false);
+    closeModal?.();
+  };
+
   return (
-    <div className='overlay'>
-      <div className="modal-container">
-        <div onClick={closeModal} className="modal-header">
-          <FontAwesomeIcon icon={faXmark} />
-        </div>
-        <div className='children'>
+    <Dialog open={open} onOpenChange={(val) => !val && handleClose()}>
+      <DialogContent className="max-w-lg p-6 rounded-2xl shadow-lg">
+        <div className="mt-2">
           {children}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

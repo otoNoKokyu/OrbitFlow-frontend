@@ -26,7 +26,7 @@ const isExcludedEndpoint = (url: string | undefined): boolean => {
 Instance.interceptors.request.use(
   (config) => {
     if (!isExcludedEndpoint(config.url)) {
-      store.dispatch(startLoading());
+      // store.dispatch(startLoading());
     }
 
     const tokens = localStorage.getItem('tokens')

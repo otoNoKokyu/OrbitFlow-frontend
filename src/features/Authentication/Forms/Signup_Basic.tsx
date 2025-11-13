@@ -1,66 +1,105 @@
-import React, { forwardRef } from 'react';
+import { forwardRef, useEffect } from 'react';
 import '../../../css/pages/signup.css';
 import classNames from 'classnames';
-import { useFormContext } from 'react-hook-form';
+import { Controller, useFormContext, useWatch } from 'react-hook-form';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import ErrorHandler from '../../../common/component/ErrorHandler';
-import {User } from '../../../common/types/Auth/auth';
+import { RegisterUser } from '../../../common/types/Auth/auth';
 
-const SignupBasic = forwardRef<HTMLDivElement, { className?: string}>(({ className }, ref) => { 
-    const { register, formState: { errors } } = useFormContext<User>();
+const SignupBasic = forwardRef<HTMLDivElement, { className?: string, emailDisabled: string }>(({ className, emailDisabled }, ref) => {
+  const { control, formState: { errors },setValue } = useFormContext<RegisterUser>();
+  const email = useWatch({ control, name: 'email' });
+  const phone = useWatch({ control, name: 'phone_number' });
 
-    return (
-            <div className={classNames('signup-common', className)} ref={ref}>
-                <div className="name">
-                    <input
-                        {...register('first_name', { required: 'Firstname is required' })}
-                        type="text"
-                        placeholder="Firstname"
-                    />
+  useEffect(()=>{
+    if(emailDisabled) setValue('email',emailDisabled,{ shouldValidate: true })
+  },[emailDisabled])
 
-                    <input
-                        {...register('last_name', { required: 'Lastname is required' })}
-                        type="text"
-                        placeholder="Lastname"
-                    />
-                </div>
-                <ErrorHandler text={errors.first_name?.message || errors.last_name?.message} />
+  
 
-                <div>
-                    <input
-                        {...register('email', { required: 'Email is required' })}
-                        type="email"
-                        placeholder="Email"
-                    />
-                    <ErrorHandler text={errors.email?.message} />
-                </div>
+  const X =     <div className={classNames('signup-common', className)} ref={ref}>
+      <div className="name grid grid-cols-2 gap-4">
+        <div className='!m-0'>
+          <Label>First Name</Label>
+          <Controller
+            name="first_name"
+            control={control}
+            rules={{ required: 'Firstname is required' }}
+            render={({ field }) => <Input  {...field} type="text" />}
+          />
+          <ErrorHandler text={errors.first_name?.message} />
+        </div>
 
-                <div>
-                    <input
-                        {...register('phone_number', { required: 'Phone number is required' })}
-                        type="number"
-                        placeholder="Phone No"
-                    />
-                    <ErrorHandler text={errors.phone_number?.message} />
-                </div>
-                <div>
-                    <input
-                        {...register('password_hash', { required: 'password is required' })}
-                        type="password"
-                        placeholder="Password"
-                    />
-                    <ErrorHandler text={errors.password_hash?.message} />
-                </div>
-                <div>
-                <input
-                    {...register('date_of_birth', { required: 'Date of Birth is required' })}
-                    type="date"
-                    placeholder="Date of Birth"
-                />
-                <ErrorHandler text={errors.date_of_birth?.message} />
-            </div>
+        <div className='!m-0'>
+          <Label>Last Name</Label>
+          <Controller
+            name="last_name"
+            control={control}
+            rules={{ required: 'Lastname is required' }}
+            render={({ field }) => <Input {...field} type="text" />}
+          />
+          <ErrorHandler text={errors.last_name?.message} />
+        </div>
+      </div>
 
-            </div>
-        )
+      { <div className="mt-4">
+        <Label>Email</Label>
+        <Controller
+          name="email"
+          disabled={!!emailDisabled}
+          control={control}
+          rules={{
+            validate: () =>
+              email || phone ? true : 'Either email or phone number is required',
+          }}
+          render={({ field }) => <Input {...field}  type="email" />}
+        />
+        <ErrorHandler text={errors.email?.message} />
+      </div>}
+
+      <div className="mt-4">
+        <Label>Phone Number</Label>
+        <Controller
+          name="phone_number"
+          control={control}
+          rules={{
+            validate: () =>
+              email || phone ? true : 'Either phone number or email is required',
+          }}
+          render={({ field }) => <Input {...field} type="number" />}
+        />
+        <ErrorHandler text={errors.phone_number?.message} />
+      </div>
+
+      <div className="mt-4">
+        <Label>Password</Label>
+        <Controller
+          name="password_hash"
+          control={control}
+          rules={{ required: 'Password is required' }}
+          render={({ field }) => <Input {...field} type="password" />}
+        />
+        <ErrorHandler text={errors.password_hash?.message} />
+      </div>
+
+      <div className="mt-4">
+        <Label>Date of Birth</Label>
+        <Controller
+          name="date_of_birth"
+          control={control}
+          render={({ field }) => (
+            <Input
+              {...field}
+              type="date"
+              value={field.value ? new Date(field.value).toISOString().slice(0, 10) : ''}
+            />
+          )}
+        />
+        <ErrorHandler text={errors.date_of_birth?.message} />
+      </div>
+    </div>
+  return (X);
 });
 
 export default SignupBasic;

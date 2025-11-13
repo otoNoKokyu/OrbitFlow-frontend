@@ -9,7 +9,8 @@
         font-style: normal;
     }
 
-    label,button {
+    label,
+    button {
         font-family: 'Nunito', sans-serif;
         font-weight: 500;
         font-style: normal;
@@ -22,10 +23,16 @@
     }
 
     form input {
-        border-radius: 5px;
-        border: 1px solid rgb(160, 154, 154);
+        padding: 25px;
+        font-size: large;
+        font-family: "Roboto", sans-serif;
         width: 100%;
-        font-size: medium;
+        margin-top: 0.25rem;
+        border-radius: 6px;
+        outline: none;
+        border: 1px solid rgb(151, 146, 146);
+        font-weight: 400;
+        color: rgb(90, 86, 86);
     }
 
     .signup-redirect {

@@ -1,0 +1,154 @@
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import NewSelect, { NewSelectValues } from '@/components/ui/NewSelect'
+import { useEffect, useState, useMemo } from 'react'
+import { fetchFilterData, fetchFilterResult } from '../service/issue.service'
+import { useFetch } from '@/hooks/useFetch'
+import IssueTable from './IssueTable'
+import { Filter, Issue, IssueItem } from '../interface/issue.interfcae'
+import { Search } from 'lucide-react'
+
+const headers = [
+  "Type",
+  "Id",
+  "Name",
+  "Assignee",
+  "Status",
+  "Due",
+  'Priority'
+];
+
+const issues = [
+  {
+    type: "Bug",
+    key: "BG-167",
+    summary: "Big logistics manager needs a calendar view",
+    assignee: { name: "Zlatko", avatar: "/avatars/zlatko.png" },
+    reporter: { name: "Joshua", avatar: "/avatars/joshua.png" },
+    status: "Unresolved",
+    resolution: "Unresolved",
+    created: "18 Dec 2020",
+    updated: "18 Dec 2020",
+    due: "08 Jan 2021"
+  },
+  {
+    type: "Task",
+    key: "AD-116",
+    summary: "Extend booking experience in UI to include calendar",
+    assignee: { name: "Joshua", avatar: "/avatars/joshua.png" },
+    reporter: { name: "Phan", avatar: "/avatars/phan.png" },
+    status: "Fixed",
+    resolution: "Fixed",
+    created: "24 Sep 2020",
+    updated: "24 Sep 2020",
+    due: "15 Sep 2019"
+  },
+  // Add more items as needed
+]
+
+
+const Header = () => {
+  const { data, loading, error } = useFetch<Filter>(fetchFilterData);
+  const [filter, setFilter] = useState('');
+  const { data: resultData, loading: loadingResult, error: errorResult } = useFetch<Issue>(fetchFilterResult, filter);
+  const [page, setPage] = useState(1)
+
+  console.log(resultData)
+
+
+  const onFilterChange = (item: NewSelectValues, option?: string) => {
+    setFilter((prev) => {
+      const value = option === 'projectId' ? item.id : item.value;
+      const regex = new RegExp(`([?&])${option}=([^&]*)`);
+
+      return regex.test(prev)
+        ? prev.replace(regex, `$1${option}=${value}`)
+        : `${prev}${prev.includes('?') ? '&' : '?'}${option}=${value}`;
+    });
+  };
+
+
+  const projectOptions = useMemo(() => {
+    return data?.projects?.map(e => ({ value: e.name, id: e.id }));
+  }, [data?.projects]);
+
+  const statusOptions = useMemo(() => {
+    return data?.status?.map(e => ({ value: e.status, id: e.id }));
+  }, [data?.status]);
+
+  const priorityOptions = useMemo(() => {
+    return data?.priorities?.map(e => ({ value: e.priority, id: e.id }));
+  }, [data?.status]);
+
+  const rowHeaderMap = (
+    _headers?: string[],
+    _mapped?: string[]
+  ): Partial<Record<keyof IssueItem, string>> => ({
+    projectIssueId: 'Id',
+    name: 'Name',
+    assignee: 'Assignee',
+    status: 'Status',
+    type: 'Type',
+    priority: 'Priority',
+    dueDate: 'Due',
+
+  });
+
+  const typeOptions = useMemo(() => {
+    return data?.types?.map(e => ({ value: e.type, id: e.id }));
+  }, [data?.types]);
+
+  if (loading || error) return null;
+  return (
+    <>
+    <div className='flex items-center gap-3 p-4'>
+      <Input
+        type="text"
+        placeholder="Search by Id"
+        className="max-w-xs py-5 pl-5 h-9 border-gray-200 text-sm pr-12" />
+        <span className='relative right-13 hover:cursor-pointer'>
+        <Search />
+        </span>
+      <NewSelect
+        placeholder='Project'
+        values={projectOptions}
+        option='projectId'
+        containerClassName='bg-gray-100 text-gray-700 font-medium'
+        triggerClassName='border-0 w-[250px]'
+        onValueChange={onFilterChange} />
+      <NewSelect
+        placeholder='Type'
+        values={typeOptions}
+        containerClassName='bg-gray-100 text-gray-700 font-medium'
+        triggerClassName='border-0'
+        option='type'
+        onValueChange={onFilterChange} />
+      <NewSelect
+        placeholder='Status'
+        values={statusOptions}
+        containerClassName='bg-gray-100 text-gray-700 font-medium'
+        triggerClassName='border-0'
+        option='status'
+        onValueChange={onFilterChange} />
+      <NewSelect
+        placeholder='Priority'
+        values={priorityOptions}
+        containerClassName='bg-gray-100 text-gray-700 font-medium'
+        triggerClassName='border-0'
+        option='priority'
+        onValueChange={onFilterChange} />
+    </div>
+      {((!loadingResult && !errorResult) || resultData?.data.length) && 
+        <IssueTable
+          data={resultData?.data!}
+          page={page}
+          limit={resultData?.totalPages!}
+          total={issues.length}
+          onPageChange={setPage}
+      />
+      }
+    </>
+  )
+}
+
+export default Header

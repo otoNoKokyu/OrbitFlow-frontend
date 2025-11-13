@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import TopBar from "./components/TopBar";
 import Sidebar from "./components/Sidebar";
 import '../../css/pages/dashboard.css'
 import { useAppSelector } from "@/store";
@@ -15,9 +14,7 @@ export const Navigation = () => {
   const handleCollapse = (value: boolean) => setCollapsed(value)
 
   useEffect(() => {
-    if (authService.checkForEmptyUserState([user, tokens])) {
-      navigate('/login')
-    };
+    if (authService.checkForEmptyUserState([user, tokens])) navigate('/login')
   }, []);
 
   return (
@@ -28,7 +25,7 @@ export const Navigation = () => {
       collapsed ? 'pl-25' : 'pl-64' 
     }`} 
   >
-    <Topbar2/>
+    <Topbar2 userId ={user?.user_id!}/>
     <div className="flex-1 overflow-y-auto">
       <Outlet />
     </div>

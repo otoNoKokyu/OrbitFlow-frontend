@@ -30,7 +30,7 @@ const Sidebar: FC<Props> = ({ collapsed, handleCollapse }) => {
 
   const sidebarItems = useMemo(() => [
     { label: "Dashboard", icon: <LayoutDashboard className={iconClass} />, path: "/dashboard" },
-    { label: "Tasks", icon: <ListTodo className={iconClass} />, path: "/tasks" },
+    { label: "Issues", icon: <ListTodo className={iconClass} />, path: "/issues" },
     { label: "Dock", icon: <Layers className={iconClass} />, path: "/dock" },
     { label: "Inbox", icon: <Inbox className={iconClass} />, path: "/inbox" },
     { label: "Calendar", icon: <Calendar className={iconClass} />, path: "/calendar" },
@@ -38,7 +38,6 @@ const Sidebar: FC<Props> = ({ collapsed, handleCollapse }) => {
   ], [collapsed])
 
   useEffect(() => {
-    console.log(32)
     if (pathname === "/" || pathname === "") navigate("/dashboard",{state: sidebarItems[0].label})
   }, [pathname, navigate])
 

@@ -3,9 +3,11 @@ import Login from './components/Login';
 import Signup from './components/Signup'
 import { useRoutes } from 'react-router-dom';
 import authService from './service/auth.service';
+import AuthProvider from '@/common/contexts/AuthContext';
+import ForgotPasswordCard from './components/ForgotPassword';
 
 export default function AuthRoutes() {
-    const routes  = useRoutes([
+    const routes = useRoutes([
         {
             path: '/login',
             element: <Login />
@@ -15,15 +17,18 @@ export default function AuthRoutes() {
             element: <Signup />
         },
         {
+            path: '/forgot-password',
+            element: <ForgotPasswordCard />
+        },
+        {
             path: '/verify',
-            element: <OtpBox 
-            submitFn={authService.verifyOtp}
-            resendFn={authService.sendOtp}
-            optionalFn={authService.callRegister}
-             />
+            element: <OtpBox
+                submitFn={authService.verifyOtp}
+                resendFn={authService.sendOtp}
+                optionalFn={authService.callRegister}
+            />
         },
     ]);
-    return routes
-
+    return <AuthProvider>{routes}</AuthProvider>;
 }
 

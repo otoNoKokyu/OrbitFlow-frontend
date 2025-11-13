@@ -6,7 +6,7 @@ import { Project } from '../Model/project.model';
 
 const projectService = {
     fetchUserProjects: asyncHandler(async (userId:string): Promise<IResponse<Project[]>> => {
-        let  url = `userProject?userId=${userId}`
+        let  url = 'userProject'
         const response :IResponse<Project[]>= await Instance.get(url);
         return response;
 }),

@@ -43,7 +43,7 @@ const Login = () => {
                 <div className='login-heading'>
                     <h1 className='poppins-regular text-left text-4xl'>Welcome back!</h1>
                 </div>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
                     <div>
                         <Label htmlFor="email">Email</Label>
                         <Controller
@@ -80,6 +80,10 @@ const Login = () => {
                 <div className="signup-redirect">
                     <p>Don't have an account?</p>
                     <Link to='/register'>Click here</Link>
+                </div>
+                <div className="signup-redirect">
+                    <p>Forgot Password?</p>
+                    <Link to='/forgot-Password'>Click here</Link>
                 </div>
             </div>
 

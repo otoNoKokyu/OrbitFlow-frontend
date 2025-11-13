@@ -11,6 +11,7 @@ const authService = {
         callRegister: asyncHandler(async (): Promise<IResponse<Signup>> => {
                 const rawTempData = localStorage.getItem('tempRegisterData')!!
                 const parsedData = JSON.parse(rawTempData)
+                console.log('p', parsedData)
                 const inviteId = parsedData.inviteId
                 delete parsedData.inviteId
                 const config: AxiosRequestConfig = {
@@ -26,6 +27,7 @@ const authService = {
                         delete config.data.assigned_role
                         config.headers = { id: inviteId }
                         config.data.isInvited = true
+                        delete config.data.projectId;
                 }
                 const response: IResponse<Signup> = await Instance(config)
                 if (response.statusCode === 201) localStorage.removeItem('tempRegisterData')
@@ -43,18 +45,27 @@ const authService = {
                 const response: IResponse<sendOtp> = await Instance.post(`/auth/sendOtp`, { resend, email })
                 return response;
         }),
-        checkForEmptyUserState : (data: any[]) => {
-          let indic = false
-          data.forEach(e=> {
-                if(isEmptyObject(e)) indic = true
-                return
-        })
-          return indic
+        forgotPassword: asyncHandler(async ( email : string ): Promise<IResponse<sendOtp>> => {
+                const response: IResponse<sendOtp> = await Instance.post(`/auth/forget-password`, { email })
+                return response;
+        }),
+        getInvitedEmail: asyncHandler(async (token: string): Promise<IResponse<{ email: string }>> => {
+                console.log(1)
+                const response: IResponse<{ email: string }> = await Instance.get(`/auth/getInvitedEmail?token=${token}`)
+                return response;
+        }),
+        checkForEmptyUserState: (data: any[]) => {
+                let indic = false
+                data.forEach(e => {
+                        if (isEmptyObject(e)) indic = true
+                        return
+                })
+                return indic
         },
         getMe: asyncHandler(async (): Promise<IResponse<any>> => {
                 const response: IResponse<any> = await Instance.get(`/user/me`)
-                const {responsePayload:{data:{username,user_id}}} = response
-                localStorage.setItem(KeyMeta.USER,JSON.stringify({username,user_id}))
+                const { responsePayload: { data: { username, user_id } } } = response
+                localStorage.setItem(KeyMeta.USER, JSON.stringify({ username, user_id }))
                 return response;
         }),
         inviteUser: asyncHandler(async ({ email, pId, role }: { role: RoleEnum; pId: string; email: string }): Promise<IResponse<string>> => {
@@ -68,8 +79,7 @@ const authService = {
         getUserMeta: (key: KeyMeta[]) => {
                 return key.reduce((data, e) => {
                         const storedItem = localStorage.getItem(e);
-                        console.log('storedItem',storedItem)
-                        if (storedItem) {return { ...data, ...JSON.parse(storedItem) }};
+                        if (storedItem) { return { ...data, ...JSON.parse(storedItem) } };
                         return data
                 }, {} as Partial<User>);
         },

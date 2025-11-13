@@ -1,43 +1,49 @@
-// import { useEffect, useState } from 'react';
+import { IResponse } from '@/common/types/global/response';
+import { useEffect, useState } from 'react';
 
-// type UseFetchResult<T> = {
-//   data: T | null;
-//   loading: boolean;
-//   error: string | null;
-// };
-// type fn =  ()=>Promise<void> 
+type UseFetchResult<T> = {
+  data: T | null;
+  loading: boolean;
+  error: string | null;
+};
 
-// export function useFetch<T = unknown>(fn:fn , options?: RequestInit): UseFetchResult<T> {
-//   const [data, setData] = useState<T | null>(null);
-//   const [loading, setLoading] = useState<boolean>(true);
-//   const [error, setError] = useState<string | null>(null);
+type Fn<T> = (param?:any) => Promise<T>;
 
-//   useEffect(() => {
-//     let isCancelled = false;
-//     const fetchData = async () => {
-//       setLoading(true);
-//       setError(null);
+export function useFetch<T = unknown>(fn: Fn<T>, query?:string): UseFetchResult<T> {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-//       try {
-//         const res = await fn();
-//         if (!res.ok) {
-//           throw new Error(`Error ${res.status}: ${res.statusText}`);
-//         }
-//         const json = await res.json();
-//         if (!isCancelled) setData(json);
-//       } catch (err: any) {
-//         if (!isCancelled) setError(err.message || 'Something went wrong');
-//       } finally {
-//         if (!isCancelled) setLoading(false);
-//       }
-//     };
+  useEffect(() => {
+    let isCancelled = false;
 
-//     fetchData();
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
 
-//     return () => {
-//       isCancelled = true;
-//     };
-//   }, [url]);
+      try {
+        const res = await fn(query??undefined);
+        if (!isCancelled) {
+            setData(res);
+          }
+        }
+      catch (err: any) {
+        if (!isCancelled) {
+          setError(err.message ?? 'Fetch failed');
+        }
+      } finally {
+        if (!isCancelled) {
+          setLoading(false);
+        }
+      }
+    };
 
-//   return { data, loading, error };
-// }
+    fetchData();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [fn,query]);
+
+  return { data, loading, error };
+}

@@ -27,15 +27,13 @@ export const InviteEmail: React.FC<Props> = ({closeInviteModal }) => {
   const [roles, setRoles] = useState<Role[]>([])
   const projectOptions = useMemo(() => selectConverter(alternateProjects, (x) => x.projectId, (x) => x.name), [alternateProjects])
   const roleOptions = useMemo(() => selectConverter(roles, (x) => x.role_id, (x) => x.role), [roles])
-  const { register, control, handleSubmit, reset,watch, formState: { errors } } = useForm<FormData>({
+  const { register, control, handleSubmit, reset, formState: { errors } } = useForm<FormData>({
     defaultValues: {
       email: '',
       projectId: '',
       role: '',
     },
   });
-  const watched = watch('projectId')
-  console.log(watched)
   const submitFn = (email: string, pId: string, role: RoleEnum) => {
     authService.inviteUser({ email, pId, role })
     closeInviteModal()

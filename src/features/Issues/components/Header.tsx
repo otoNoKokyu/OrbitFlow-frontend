@@ -6,7 +6,7 @@ import { fetchFilterData, fetchFilterResult } from '../service/issue.service'
 import { useFetch } from '@/hooks/useFetch'
 import IssueTable from './IssueTable'
 import { Filter, Issue, IssueItem } from '../interface/issue.interfcae'
-import { Search } from 'lucide-react'
+import { RotateCw, Search } from 'lucide-react'
 
 const headers = [
   "Type",
@@ -52,18 +52,25 @@ const Header = () => {
   const [filter, setFilter] = useState('');
   const { data: resultData, loading: loadingResult, error: errorResult } = useFetch<Issue>(fetchFilterResult, filter);
   const [page, setPage] = useState(1)
+  const [resetKey, setResetKey] = useState(0);
 
-  console.log(resultData)
 
+  useEffect(() => {
+    if (page) onFilterChange(page, 'page')
+  }, [page])
 
-  const onFilterChange = (item: NewSelectValues, option?: string) => {
+  const onFilterChange = (item: NewSelectValues | number | string | null, option?: string) => {
     setFilter((prev) => {
-      const value = option === 'projectId' ? item.id : item.value;
-      const regex = new RegExp(`([?&])${option}=([^&]*)`);
-
-      return regex.test(prev)
-        ? prev.replace(regex, `$1${option}=${value}`)
-        : `${prev}${prev.includes('?') ? '&' : '?'}${option}=${value}`;
+      if (option === 'reset') return '?page=1';
+      const value = option === 'page' ? String(item) :
+        option === 'projectIsuueId' ? item :
+          option === 'projectId' ? (item as NewSelectValues).id :
+            (item as NewSelectValues).value;
+      const enc = encodeURIComponent(value);
+      const re = new RegExp(`([?&])${option}=[^&]*`);
+      return re.test(prev)
+        ? prev.replace(re, `$1${option}=${enc}`)
+        : `${prev}${prev.includes('?') ? '&' : '?'}${option}=${enc}`;
     });
   };
 
@@ -80,19 +87,19 @@ const Header = () => {
     return data?.priorities?.map(e => ({ value: e.priority, id: e.id }));
   }, [data?.status]);
 
-  const rowHeaderMap = (
-    _headers?: string[],
-    _mapped?: string[]
-  ): Partial<Record<keyof IssueItem, string>> => ({
-    projectIssueId: 'Id',
-    name: 'Name',
-    assignee: 'Assignee',
-    status: 'Status',
-    type: 'Type',
-    priority: 'Priority',
-    dueDate: 'Due',
+  // const rowHeaderMap = (
+  //   _headers?: string[],
+  //   _mapped?: string[]
+  // ): Partial<Record<keyof IssueItem, string>> => ({
+  //   projectIssueId: 'Id',
+  //   name: 'Name',
+  //   assignee: 'Assignee',
+  //   status: 'Status',
+  //   type: 'Type',
+  //   priority: 'Priority',
+  //   dueDate: 'Due',
 
-  });
+  // });
 
   const typeOptions = useMemo(() => {
     return data?.types?.map(e => ({ value: e.type, id: e.id }));
@@ -101,51 +108,77 @@ const Header = () => {
   if (loading || error) return null;
   return (
     <>
-    <div className='flex items-center gap-3 p-4'>
-      <Input
-        type="text"
-        placeholder="Search by Id"
-        className="max-w-xs py-5 pl-5 h-9 border-gray-200 text-sm pr-12" />
+      <div className='flex items-center gap-3 p-4'>
+        <Input
+          onChange={(e) => onFilterChange(e.currentTarget.value, 'projectIssueId')}
+          type="text"
+          placeholder="Search by Id"
+          className="max-w-xs py-5 pl-5 h-9 border-gray-200 text-sm pr-12" />
         <span className='relative right-13 hover:cursor-pointer'>
-        <Search />
+          <Search />
         </span>
-      <NewSelect
-        placeholder='Project'
-        values={projectOptions}
-        option='projectId'
-        containerClassName='bg-gray-100 text-gray-700 font-medium'
-        triggerClassName='border-0 w-[250px]'
-        onValueChange={onFilterChange} />
-      <NewSelect
-        placeholder='Type'
-        values={typeOptions}
-        containerClassName='bg-gray-100 text-gray-700 font-medium'
-        triggerClassName='border-0'
-        option='type'
-        onValueChange={onFilterChange} />
-      <NewSelect
-        placeholder='Status'
-        values={statusOptions}
-        containerClassName='bg-gray-100 text-gray-700 font-medium'
-        triggerClassName='border-0'
-        option='status'
-        onValueChange={onFilterChange} />
-      <NewSelect
-        placeholder='Priority'
-        values={priorityOptions}
-        containerClassName='bg-gray-100 text-gray-700 font-medium'
-        triggerClassName='border-0'
-        option='priority'
-        onValueChange={onFilterChange} />
-    </div>
-      {((!loadingResult && !errorResult) || resultData?.data.length) && 
+        <NewSelect
+          key={resetKey + "-project"}
+          placeholder="Project"
+          values={projectOptions}
+          option="projectId"
+          containerClassName="bg-gray-100 text-gray-700 font-medium"
+          triggerClassName="border-0 w-[250px]"
+          onValueChange={onFilterChange}
+        />
+
+        <NewSelect
+          key={resetKey + "-type"}
+          placeholder="Type"
+          values={typeOptions}
+          option="type"
+          containerClassName="bg-gray-100 text-gray-700 font-medium"
+          triggerClassName="border-0"
+          onValueChange={onFilterChange}
+        />
+
+        <NewSelect
+          key={resetKey + "-status"}
+          placeholder="Status"
+          values={statusOptions}
+          option="status"
+          containerClassName="bg-gray-100 text-gray-700 font-medium"
+          triggerClassName="border-0"
+          onValueChange={onFilterChange}
+        />
+
+        <NewSelect
+          key={resetKey + "-priority"}
+          placeholder="Priority"
+          values={priorityOptions}
+          option="priority"
+          containerClassName="bg-gray-100 text-gray-700 font-medium"
+          triggerClassName="border-0"
+          onValueChange={onFilterChange}
+        />
+
+        <Button
+          className="hover:cursor-pointer"
+          variant={'outline'}
+          onClick={() => {
+            onFilterChange(null, 'reset')
+            setResetKey(prev => prev + 1); // 👈 force reset selects
+
+          }}
+
+        >
+          Reset
+          <RotateCw />
+        </Button>
+      </div>
+      {((!loadingResult && !errorResult) || resultData?.data.length) &&
         <IssueTable
           data={resultData?.data!}
           page={page}
           limit={resultData?.totalPages!}
           total={issues.length}
           onPageChange={setPage}
-      />
+        />
       }
     </>
   )

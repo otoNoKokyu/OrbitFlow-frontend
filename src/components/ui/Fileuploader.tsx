@@ -1,110 +1,95 @@
-import React, { useState, DragEvent, useRef } from "react";
-import { Upload, FileIcon, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+// FileUploader.tsx
+import { useRef, useId } from "react";
+import { X, Upload } from "lucide-react";
 
-interface FileUploaderProps {
-  name: string;
-  multiple?: boolean;
-  onChange?: (files: File[] | null) => void;
+export interface FileWithId extends File {
+  id: string;
 }
 
-const FileUploader: React.FC<FileUploaderProps> = ({
-  name,
-  multiple = true,
-  onChange,
-}) => {
-  const [files, setFiles] = useState<File[]>([]);
-  const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+/** Props accepted by the component */
+interface FileUploaderProps {
+  value: FileWithId[];
+  onChange: (files: FileWithId[]) => void;
+  name: string;
+}
 
-  const handleFiles = (selectedFiles: FileList | null) => {
-    if (!selectedFiles) return;
+export default function FileUploader({ value, onChange,name }: FileUploaderProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const uid = useId();
+  const genId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-    const fileArray = Array.from(selectedFiles);
-    const newFiles = multiple ? [...files, ...fileArray] : fileArray.slice(0, 1);
-    setFiles(newFiles);
-    onChange?.(newFiles);
+  const addFiles = (fileList: FileList | null) => {
+    if (!fileList?.length) return;
+
+    const newFiles: FileWithId[] = Array.from(fileList).map((f) => {
+      const file = new File([f], f.name, { type: f.type }) as FileWithId;
+      file.id = genId();
+      return file;
+    });
+
+    onChange([...value, ...newFiles]);
+    if (inputRef.current) inputRef.current.value = "";
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleFiles(e.target.files);
-  };
-
-  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
-    handleFiles(e.dataTransfer.files);
-  };
-
-  const removeFile = (index: number) => {
-    const updatedFiles = files.filter((_, i) => i !== index);
-    setFiles(updatedFiles);
-    onChange?.(updatedFiles.length ? updatedFiles : null);
+  const removeFile = (id: string) => {
+    onChange(value.filter((f) => f.id !== id));
   };
 
   return (
-    <div
-      onDragOver={(e) => {
-        e.preventDefault();
-        setIsDragging(true);
-      }}
-      onDragLeave={(e) => {
-        e.preventDefault();
-        setIsDragging(false);
-      }}
-      onDrop={handleDrop}
-      className={`w-[350px] px-3 py-6 rounded-xl border border-dashed transition-all flex flex-col items-center justify-center text-center cursor-pointer ${
-        isDragging ? "border-blue-400 bg-blue-50" : "border-gray-300 bg-gray-100"
-      } hover:border-gray-400`}
-      onClick={() => fileInputRef.current?.click()}
-    >
-      {!files.length ? (
-        <>
-          <Upload className="w-8 h-8 text-gray-500 mb-2" />
-          {/* <p className="text-sm text-gray-600 mb-1">
-            {isDragging ? "Drop your files here" : "Drag & drop your files here"}
-          </p>
-          <p className="text-xs text-gray-400 mb-3">or click to browse</p>
-          <Button variant="outline" size="sm" type="button">
-            Choose Files
-          </Button> */}
-        </>
-      ) : (
-        <div className="w-full space-y-2">
-          {files.map((file, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-between w-full px-3 py-2 rounded-md bg-white shadow-sm border border-gray-200"
-            >
-              <div className="flex items-center gap-2 text-gray-700">
-                <FileIcon className="w-5 h-5 text-blue-500" />
-                <span className="text-sm truncate max-w-[180px]">{file.name}</span>
-              </div>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeFile(index);
-                }}
-                className="text-gray-500 hover:text-red-500 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+    <div className="w-[350px]">
+      <label
+        htmlFor={uid}
+        className="block border border-dashed rounded-xl bg-gray-50 hover:bg-gray-100 cursor-pointer p-6 transition"
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => {
+          e.preventDefault();
+          addFiles(e.dataTransfer.files);
+        }}
+      >
+        <input
+          id={uid}
+          ref={inputRef}
+          type="file"
+          multiple
+          name={name}
+          className="sr-only"
+          onChange={(e) => addFiles(e.target.files)}
+        />
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        name={name}
-        multiple={multiple}
-        onChange={handleFileChange}
-        className="hidden"
-      />
+        <div className="flex flex-col items-center text-center space-y-2">
+          <Upload className="w-6 h-6 text-gray-600" />
+        </div>
+
+        {value.length > 0 && (
+          <div className="mt-4 space-y-2">
+            {value.map((file) => (
+              <div
+                key={file.id}
+                className="flex items-center justify-between bg-white rounded-md p-2 border"
+              >
+                <div className="flex items-center gap-2 overflow-hidden">
+                  <Upload className="w-4 h-4 flex-shrink-0 text-gray-600" />
+                  <span className="text-sm truncate max-w-[180px]">
+                    {file.name}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeFile(file.id);
+                  }}
+                  className="text-red-600 hover:text-red-800 transition"
+                  aria-label={`Remove ${file.name}`}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </label>
     </div>
   );
-};
-
-export default FileUploader;
+}

@@ -11,8 +11,8 @@ import { useSelector } from 'react-redux';
 import { RootState } from './store';
 import { FullscreenSpinner } from './components/ui/spinner';
 import Header from './features/Issues/components/Header';
-import JiraIssueDetail from './features/Issues/components/IssueView';
-import CreateIssueDemo from './features/Issues/components/Create';
+
+import IssueDetail from './features/Issues/components/IssueView';
 function App() {
   const loading = useSelector((state: RootState) => state.loading.count > 0);
   if (loading) return <FullscreenSpinner />
@@ -21,9 +21,9 @@ function App() {
       <Routes>
         <Route path='' element={<Navigation />}>
           <Route path='dashboard' element={<DnDKitBoard />} />
-          <Route path='issues' element={<Header />} />
-          <Route path='issues' element={<Header />} />
-          <Route path='issue' element={<CreateIssueDemo />} />
+          <Route path="issues" element={<Header />} />
+          <Route path="issues/:id" element={<IssueDetail />} />
+          {/* <Route path='issue' element={<CreateIssueDemo />} /> */}
         </Route>
         <Route path='/*' element={<AuthRoutes />} />
       </Routes>

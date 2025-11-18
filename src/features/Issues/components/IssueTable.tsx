@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import {
   Table,
@@ -6,173 +6,196 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow
-} from '@/components/ui/table'
+  TableRow,
+} from '@/components/ui/table';
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
-  PaginationLink
-} from '@/components/ui/pagination'
-import { Issue } from '@/features/Issues/interface/issue.interfcae'
-import NewSelect from '@/components/ui/NewSelect'
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useMemo } from 'react';
+import { IssueItem } from '../interface/issue.interfcae';
+import '../../../css/components/Table.css'
+import { useNavigate } from 'react-router-dom';
 
 interface IssueTableProps {
-  data: Issue['data']
-  page: number
-  limit: number
-  total: number
-  onPageChange: (newPage: number) => void
+  data: IssueItem[];              
+  page: number;
+  limit: number;
+  total: number;
+  onPageChange: (newPage: number) => void;
+  onPriorityChange?: (issueId: string, value: string) => void;
+  onStatusChange?: (issueId: string, value: string) => void;
 }
 
 export default function IssueTable({
   data,
   page,
-  limit,
   total,
-  onPageChange
+  onPageChange,
+  onPriorityChange,
+  onStatusChange,
 }: IssueTableProps) {
-  const totalPages = Math.ceil(total / limit)
+  const totalPages = total;
 
+
+  // ---------- Helper: safe date ----------
+  const formatDate = (dateStr: string | null | undefined) => {
+    if (!dateStr) return '-';
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? '-' : d.toLocaleDateString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });;
+  };
+
+  const navigate = useNavigate()
+  const pageNumbers = useMemo(() => {
+    const delta = 2;
+    const range: (number | 'ellipsis')[] = [];
+    const start = Math.max(1, page - delta);
+    const end = Math.min(totalPages, page + delta);
+
+    if (start > 1) range.push(1, 'ellipsis');
+    for (let i = start; i <= end; i++) range.push(i);
+    if (end < totalPages) range.push('ellipsis', totalPages);
+
+    return range;
+  }, [page, totalPages]);
+
+  // ---------- Render ----------
   return (
-    <div className="relative flex flex-col w-full h-full overflow-auto text-gray-700 bg-white shadow-md rounded-xl bg-clip-border p-4">
-      <table className="w-full min-w-max table-auto text-left">
-        <thead>
-          <tr>
-            <th className="p-4 border-b border-blue-gray-100 bg-blue-gray-50 font-medium text-neutral-600">
-              Name
-            </th>
-            <th className="p-4 border-b border-blue-gray-100 bg-blue-gray-50 font-medium text-neutral-600">
-              Assignee
-            </th>
-            <th className="p-4 border-b border-blue-gray-100 bg-blue-gray-50 font-medium text-neutral-600">
-              Priority
-            </th>
-            <th className="p-4 border-b border-blue-gray-100 bg-blue-gray-50 font-medium text-neutral-600">
-              Type
-            </th>
-            <th className="p-4 border-b border-blue-gray-100 bg-blue-gray-50 font-medium text-neutral-600">
-              Status
-            </th>
-            <th className="p-4 border-b border-blue-gray-100 bg-blue-gray-50 font-medium text-neutral-600">
-              Due Date
-            </th>
-            <th className="p-4 border-b border-blue-gray-100 bg-blue-gray-50 font-medium text-neutral-600">
-              ID
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((issue) => (
-            <tr key={issue.id} className="hover:bg-gray-50 cursor-pointer">
-              <td className="p-4 border-b border-blue-gray-50 text-sm font-medium">
-                {issue.name}
-              </td>
-              <td className="p-4 border-b border-blue-gray-50 text-sm">
-                {issue.assignee}
-              </td>
-              <td className="p-4 border-b border-blue-gray-50 text-sm">
-                <NewSelect
-                  values={[{ id: '1', value: 'High' }, { id: '2', value: 'Medium' }, { id: '3', value: 'Low' }]}
-                  defaultValue={issue.priority}
-                />
-              </td>
-              <td className="p-4 border-b border-blue-gray-50 text-sm">
-                {issue.type}
-              </td>
-              <td className="p-4 border-b border-blue-gray-50 text-sm">
-                <NewSelect
-                  values={[{ id: '1', value: 'To Do' }, { id: '2', value: 'In Progress' }, { id: '3', value: 'On Review' }]}
-                  defaultValue={issue.status}
-                />
-              </td>
-              <td className="p-4 border-b border-blue-gray-50 text-sm">
-                {new Date(issue.dueDate).toLocaleDateString()}
-              </td>
-              <td className="p-4 border-b border-blue-gray-50 text-sm">
-                {issue.projectIssueId ?? '-'}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="flex flex-col h-full gap-4 overflow-auto rounded-xl bg-white p-4 shadow-md">
+      {/* ---------- Table ---------- */}
+      <div className="overflow-x-auto h-[850px]">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Assignee</TableHead>
+              <TableHead>Priority</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Due Date</TableHead>
+              <TableHead>ID</TableHead>
+            </TableRow>
+          </TableHeader>
+
+          <TableBody>
+            {data.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center text-muted-foreground">
+                  No issues found.
+                </TableCell>
+              </TableRow>
+            ) : (
+              data.map((issue) => (
+                <TableRow 
+                onClick={()=>navigate(`/issues/${issue.projectIssueId}`)}
+                key={issue.id}
+                className="hover:bg-muted/80 cursor-pointer py-8 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
+                  <TableCell className="font-medium w-[500px]">{issue.name}</TableCell>
+                  <TableCell>{issue.assignee ?? '-'}</TableCell>
+
+                  {/* ----- Priority Select ----- */}
+                  <TableCell>
+                    <Select
+                      value={issue.priority}
+                      onValueChange={(v) => onPriorityChange?.(issue.id, v)}
+                    >
+                      <SelectTrigger className="w-[110px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="High">High</SelectItem>
+                        <SelectItem value="Medium">Medium</SelectItem>
+                        <SelectItem value="Low">Low</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+
+                  <TableCell>{issue.type ?? '-'}</TableCell>
+
+                  {/* ----- Status Select ----- */}
+                  <TableCell>
+                    <Select
+                      value={issue.status}
+                      onValueChange={(v) => onStatusChange?.(issue.id, v)}
+                    >
+                      <SelectTrigger className="w-[130px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="To Do">To Do</SelectItem>
+                        <SelectItem value="In Progress">In Progress</SelectItem>
+                        <SelectItem value="On Review">On Review</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+
+                  <TableCell>{formatDate(issue.dueDate)}</TableCell>
+                  <TableCell>{issue.projectIssueId ?? '-'}</TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
       {totalPages > 1 && (
-        <div className="flex flex-col items-center mt-6">
-          <span className="text-sm text-gray-700 mb-2">
-            Showing{' '}
-            <span className="font-semibold text-gray-900">
-              {(page - 1) * limit + 1}
-            </span>{' '}
-            to{' '}
-            <span className="font-semibold text-gray-900">
-              {Math.min(page * limit, total)}
-            </span>{' '}
-            of{' '}
-            <span className="font-semibold text-gray-900">{total}</span> Entries
-          </span>
-          <div className="inline-flex rounded-md shadow-sm">
-            <button
-              onClick={() => onPageChange(page - 1)}
-              disabled={page === 1}
-              className={`flex items-center justify-center px-4 h-10 text-base font-medium border border-gray-300 bg-white text-gray-500 hover:bg-gray-100 hover:text-gray-700 rounded-l-md ${page === 1 ? 'cursor-not-allowed opacity-50' : ''
-                }`}
-              aria-label="Previous Page"
-            >
-              {/* Left arrow SVG */}
-              <svg
-                className="w-5 h-5 mr-1"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-              </svg>
-              Prev
-            </button>
+        <div className="flex flex-col items-center gap-2">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => onPageChange(page - 1)}
+                  className={page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  aria-disabled={page === 1}
+                />
+              </PaginationItem>
 
-            {[...Array(totalPages)].map((_, i) => {
-              const pageNumber = i + 1
-              const isActive = page === pageNumber
-              return (
-                <button
-                  key={pageNumber}
-                  onClick={() => onPageChange(pageNumber)}
-                  className={`px-4 h-10 text-base font-medium border-t border-b border-gray-300 bg-white hover:bg-gray-100 hover:text-gray-700 ${isActive
-                      ? 'z-10 bg-blue-600 text-white border-blue-600'
-                      : 'text-gray-500 cursor-pointer'
-                    }`}
-                  aria-current={isActive ? 'page' : undefined}
-                >
-                  {pageNumber}
-                </button>
-              )
-            })}
+              {pageNumbers.map((p, idx) =>
+                p === 'ellipsis' ? (
+                  <PaginationItem key={`ellipsis-${idx}`}>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                ) : (
+                  <PaginationItem key={p}>
+                    <PaginationLink
+                      onClick={() => onPageChange(p as number)}
+                      isActive={page === p}
+                      className="cursor-pointer"
+                    >
+                      {p}
+                    </PaginationLink>
+                  </PaginationItem>
+                )
+              )}
 
-            <button
-              onClick={() => onPageChange(page + 1)}
-              disabled={page === totalPages}
-              className={`flex items-center justify-center px-4 h-10 text-base font-medium border border-gray-300 bg-white text-gray-500 hover:bg-gray-100 hover:text-gray-700 rounded-r-md ${page === totalPages ? 'cursor-not-allowed opacity-50' : ''
-                }`}
-              aria-label="Next Page"
-            >
-              Next
-              <svg
-                className="w-5 h-5 ml-1"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => onPageChange(page + 1)}
+                  className={page === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  aria-disabled={page === totalPages}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         </div>
       )}
     </div>
-  )
+  );
 }

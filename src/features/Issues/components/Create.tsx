@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { X, Tag, AlertCircle, Paperclip } from 'lucide-react';
 import '../../../css/pages/issues.css'
@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import FileUploader from '@/components/ui/Fileuploader';
+import FileUploader, { FileWithId } from '@/components/ui/Fileuploader';
 import {
   Select,
   SelectContent,
@@ -21,92 +21,64 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-
+import { useFetch } from '@/hooks/useFetch';
+import userProjectService from '@/features/Navigation/service/project.service';
+import { selectConverter } from '@/utility/objectUtils';
+import { issueTypes, priorities } from '../constants/issue.constant';
+import { creatIssue } from '../service/issue.service';
+import { IssueFormData } from '../interface/issue.interfcae';
 // Types
-interface IssueFormData {
-  name: string;
-  description?: string;
-  type: string;
-  priority: string;
-  assigneeId?: string;
-  dueDate?: string;
-  estimate?: number;
-  attachments?: FileList | null;
-  labels?: string[];
-  parentId?: string;
-  reporterId: string;
-}
 
 interface CreateIssueModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: IssueFormData) => void;
+  onSubmit: (data: FormData) => void;
+  projectId?: string;
+  parentId?: string
 }
 
-// Mock Data
-const issueTypes = [
-  { value: 'story', label: 'Story', icon: '📖' },
-  { value: 'task', label: 'Task', icon: '✓' },
-  { value: 'epic', label: 'Epic', icon: '⚡' },
-  { value: 'subtask', label: 'Subtask', icon: '🔹' },
-];
-
-const priorities = [
-  { value: 'highest', label: 'Highest', color: 'text-red-600' },
-  { value: 'high', label: 'High', color: 'text-orange-600' },
-  { value: 'medium', label: 'Medium', color: 'text-yellow-600' },
-  { value: 'low', label: 'Low', color: 'text-blue-600' },
-  { value: 'lowest', label: 'Lowest', color: 'text-gray-600' },
-];
-
-const users = [
-  { id: '1', name: 'Sarah Johnson' },
-  { id: '2', name: 'Mike Chen' },
-  { id: '3', name: 'Alex Rivera' },
-  { id: '4', name: 'Emma Davis' },
-];
 
 const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
   open,
   onClose,
   onSubmit,
+  parentId,
+  projectId = '020212ea-0e5a-48d9-9ea4-3dbc045fe166'
 }) => {
-  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
 
-  const { register, handleSubmit, control, formState: { errors, isSubmitting }, reset } =
-    useForm<IssueFormData>({
-      defaultValues: {
-        name: '',
-        description: '',
-        type: '',
-        priority: 'medium',
-        assigneeId: '',
-        dueDate: '',
-        estimate: undefined,
-        attachments: null,
-        labels: [],
-        parentId: '',
-      },
-    });
+  const { register, handleSubmit, control, formState: { isSubmitting }, reset } = useForm<IssueFormData>();
+  const { data: assigneesAndReporter, loading } = useFetch(userProjectService.fetchUsersInProjects, projectId);
+  if (loading) return null;
+  const projectUserOptions = selectConverter(assigneesAndReporter ?? [], (x) => x?.projectId, (x) => `${x.first_name} ${x.last_name}`);
 
   const handleFormSubmit = async (data: IssueFormData) => {
-    const formattedData = {
-      ...data,
-      labels: selectedLabels,
-    };
-    console.log(data)
-    await onSubmit(formattedData);
-    reset();
-    setSelectedLabels([]);
-    onClose();
+    try {
+      const formData = new FormData();
+      formData.append("type", data.type);
+      formData.append("name", data.name);
+      formData.append("description", data.description || "");
+      formData.append("priority", data.priority || "");
+      formData.append("assigneeId", data.assigneeId || "");
+      formData.append("reporterId", data.reporterId || "");
+      formData.append("estimation", data.estimate || '');
+      formData.append('projectId',projectId)
+      // if(parentId) formData.append('parentId',parentId)
+
+      data.attachments?.forEach((file) => formData.append("attachments", file));
+      await onSubmit(formData);
+      reset()
+      onClose();
+    } catch (err) {
+      console.error('Submit failed:', err);
+      reset()
+    }
   };
 
   const handleClose = () => {
     reset();
-    setSelectedLabels([]);
     onClose();
   };
-
+  
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -115,16 +87,17 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Issue Type */}
           <div className="space-y-2">
             <Label htmlFor="type">Issue Type <span className="text-red-500">*</span></Label>
             <Controller
               name="type"
               control={control}
               rules={{ required: 'Issue type is required' }}
-              render={({ field }) => (
+              render={({ field, fieldState:{error} }) => (
                 <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger className='py-6 px-3 text-md mt-1 w-[350px] bg-gray-100'>
+                  <SelectTrigger className={`py-6 px-3 text-md mt-1 w-[350px] bg-gray-100 ${ error
+                      ? "border-red-500 p-4 py-6 px-3 text-md"
+                      : "py-6 px-3 !text-md"}`}>
                     <SelectValue placeholder="Select issue type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -140,22 +113,30 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
                 </Select>
               )}
             />
-            {errors.type && (
-              <p className="text-sm text-red-500 flex items-center gap-1">
-                <AlertCircle className="w-4 h-4" /> {errors.type.message}
-              </p>
-            )}
           </div>
 
           {/* Summary (name) */}
           <div className="space-y-2">
-            <Label htmlFor="name">Summary <span className="text-red-500">*</span></Label>
-            <Input
+            <Label htmlFor="name">
+              Summary <span className="text-red-500">*</span>
+            </Label>
 
-              id="name"
-              placeholder="Enter issue summary"
-              {...register('name', { required: 'Summary is required' })}
-              className={errors.name ? 'border-red-500 p-4 py-6 px-3 text-md' : 'py-6 px-3 !text-md'}
+            <Controller
+              name="name"
+              control={control}
+              rules={{ required: "Summary is required" }}
+              render={({ field, fieldState: { error } }) => (
+                <Input
+                  id="name"
+                  placeholder="Enter issue summary"
+                  {...field}
+                  className={
+                    error
+                      ? "border-red-500 p-4 py-6 px-3 text-md"
+                      : "py-6 px-3 !text-md"
+                  }
+                />
+              )}
             />
           </div>
 
@@ -205,21 +186,21 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
               control={control}
               render={({ field }) => (
                 <Select
-                  onValueChange={(value) => field.onChange(value === 'unassigned' ? '' : value)}
-                  value={field.value || 'unassigned'}
+                  onValueChange={(value) => field.onChange(value??'')}
+                  value={field.value}
                 >
-                  <SelectTrigger className='py-6 px-3 text-md mt-1 w-[350px] bg-gray-100'>
-                    <SelectValue placeholder="Unassigned" />
+                  <SelectTrigger disabled={loading} className='py-6 px-3 text-md mt-1 w-[350px] bg-gray-100'>
+                    <SelectValue placeholder="select assignee" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unassigned">Unassigned</SelectItem>
-                    {users.map((user) => (
+                    {/* <SelectItem value="unassigned">Unassigned</SelectItem> */}
+                    {projectUserOptions.map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         <div className="flex items-center gap-2">
-                          <Avatar className="w-6 h-6">
-                            <AvatarFallback>{user.name[0]}</AvatarFallback>
+                          <Avatar className="w-8 h-8">
+                            <AvatarFallback className='!bg-gray-300'>{user.label[0]}</AvatarFallback>
                           </Avatar>
-                          {user.name}
+                          {user.label}
                         </div>
                       </SelectItem>
                     ))}
@@ -229,29 +210,29 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
             />
           </div>
 
-                    {/* Reporter */}
+          {/* Reporter */}
           <div className="space-y-2">
-            <Label htmlFor="assigneeId">Reporter</Label>
+            <Label htmlFor="reporterId">Reporter</Label>
             <Controller
               name="reporterId"
               control={control}
               render={({ field }) => (
                 <Select
-                  onValueChange={(value) => field.onChange(value === 'unassigned' ? '' : value)}
-                  value={field.value || 'unassigned'}
+                  onValueChange={(value) => field.onChange( value??'')}
+                  value={field.value }
                 >
-                  <SelectTrigger className='py-6 px-3 text-md mt-1 w-[350px] bg-gray-100'>
-                    <SelectValue placeholder="Unassigned" />
+                  <SelectTrigger disabled={loading} className='py-6 px-3 text-md mt-1 w-[350px] bg-gray-100'>
+                    <SelectValue placeholder="select reporter" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unassigned">Unassigned</SelectItem>
-                    {users.map((user) => (
+                    {/* <SelectItem value="unassigned">Unassigned</SelectItem> */}
+                    {projectUserOptions.map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         <div className="flex items-center gap-2">
-                          <Avatar className="w-6 h-6">
-                            <AvatarFallback>{user.name[0]}</AvatarFallback>
+                          <Avatar className="w-8 h-8">
+                            <AvatarFallback className='!bg-gray-300'>{user.label[0]}</AvatarFallback>
                           </Avatar>
-                          {user.name}
+                          {user.label}
                         </div>
                       </SelectItem>
                     ))}
@@ -273,12 +254,6 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
             />
           </div>
 
-          {/* Due Date */}
-          <div className="space-y-2">
-            <Label htmlFor="dueDate">Due Date</Label>
-            <Input className='py-6 px-3 text-md mt-1 w-[350px] bg-gray-100' id="dueDate" type="date" {...register('dueDate')} />
-          </div>
-
           {/* Attachments */}
           <div className="space-y-2">
             <Label htmlFor="attachments">Attachments</Label>
@@ -287,35 +262,38 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
                 name="attachments"
                 control={control}
                 render={({ field }) => (
-                  <FileUploader name={field.name} multiple onChange={field.onChange} />
+                  <FileUploader
+                    name = 'attachments'
+                    value={field.value ?? []}
+                    onChange={(files) => field.onChange(files)}
+                  />
                 )}
               />
             </div>
           </div>
 
-        {/* Footer */}
-        <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={handleClose} disabled={isSubmitting}>
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit(handleFormSubmit)} disabled={isSubmitting}>
-            {isSubmitting ? 'Creating...' : 'Create Issue'}
-          </Button>
-        </DialogFooter>
-      </div>
-    </DialogContent>
+
+          {/* Footer */}
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={handleClose} disabled={isSubmitting}>
+              Cancel
+            </Button>
+            <Button onClick={handleSubmit(handleFormSubmit)} disabled={isSubmitting}>
+              {isSubmitting ? 'Creating...' : 'Create Issue'}
+            </Button>
+          </DialogFooter>
+        </div>
+      </DialogContent>
     </Dialog >
   );
 };
 
 
-// Demo Component
 const CreateIssueDemo: React.FC = () => {
   const [open, setOpen] = useState(false);
 
-  const handleSubmit = (data: IssueFormData) => {
-    console.log('Issue created:', data);
-    // Here you would typically send the data to your backend
+  const handleSubmit = async (formData: FormData) => {
+    await creatIssue(formData);
   };
 
   return (

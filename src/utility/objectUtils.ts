@@ -7,7 +7,16 @@ export const selectConverter = <T extends object>(data: Array<T>, idCb: cb<T>, l
         }
     })
 }
-export const isEmptyObject = (data: object) => {
+export const isEmptyObject = (data: object | null) => {
     if (!data) return true
     else return Object.entries(data)?.length ? false : true
+}
+
+export const readableDateConverter = (date:string) => {
+    return new Date(date).toLocaleDateString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    })
 }

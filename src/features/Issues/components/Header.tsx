@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import NewSelect, { NewSelectValues } from '@/components/ui/NewSelect'
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { fetchFilterData, fetchFilterResult } from '../service/issue.service'
 import { useFetch } from '@/hooks/useFetch'
 import IssueTable from './IssueTable'
@@ -59,21 +59,34 @@ const Header = () => {
     if (page) onFilterChange(page, 'page')
   }, [page])
 
-  const onFilterChange = (item: NewSelectValues | number | string | null, option?: string) => {
-    setFilter((prev) => {
-      if (option === 'reset') return '?page=1';
-      const value = option === 'page' ? String(item) :
-        option === 'projectIsuueId' ? item :
-          option === 'projectId' ? (item as NewSelectValues).id :
-            (item as NewSelectValues).value;
-      const enc = encodeURIComponent(value);
-      const re = new RegExp(`([?&])${option}=[^&]*`);
-      return re.test(prev)
-        ? prev.replace(re, `$1${option}=${enc}`)
-        : `${prev}${prev.includes('?') ? '&' : '?'}${option}=${enc}`;
-    });
-  };
+ const onFilterChange = (
+  item: NewSelectValues | number | string | null,
+  option?: string
+) => {
+  setFilter((prev) => {
+    if (option === 'reset') return '?page=1';
 
+    const value =
+      option === 'page'
+        ? String(item)
+        : option === 'anyKey'
+        ? String(item || '')
+        : option === 'projectIsuueId'
+        ? item
+        : option === 'projectId'
+        ? (item as NewSelectValues).id
+        : (item as NewSelectValues).value;
+
+    const enc = encodeURIComponent(value);
+    const re = new RegExp(`([?&])${option}=[^&]*`);
+
+    return re.test(prev)
+      ? prev.replace(re, `$1${option}=${enc}`)
+      : `${prev}${prev.includes("?") ? "&" : "?"}${option}=${enc}`;
+  });
+};
+
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const projectOptions = useMemo(() => {
     return data?.projects?.map(e => ({ value: e.name, id: e.id }));
@@ -110,12 +123,14 @@ const Header = () => {
     <>
       <div className='flex items-center gap-3 p-4'>
         <Input
-          onChange={(e) => onFilterChange(e.currentTarget.value, 'projectIssueId')}
+          ref = {inputRef}
           type="text"
-          placeholder="Search by Id"
+          placeholder="Search"
           className="max-w-xs py-5 pl-5 h-9 border-gray-200 text-sm pr-12" />
         <span className='relative right-13 hover:cursor-pointer'>
-          <Search />
+          <Search onClick={()=>{
+            console.log(inputRef)
+            onFilterChange(inputRef.current?.value ?? '', 'anyKey')}} />
         </span>
         <NewSelect
           key={resetKey + "-project"}

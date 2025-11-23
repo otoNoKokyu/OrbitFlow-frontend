@@ -25,6 +25,20 @@ export interface Issue{
       name: string;
     };
   }
+
+  export interface Comment {
+    id?: string;
+    issue_id: string;
+    parent_comment_id?: string;
+    content: string;
+    updatedAt?: string;
+    createdAt?: string;
+    mentions?: string[];
+    author?:{
+      first_name:string;
+      last_name:string;
+    }
+  }
   export interface IssueDetail {
   id: string;
   name: string;

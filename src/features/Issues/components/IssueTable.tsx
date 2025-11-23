@@ -24,13 +24,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { useMemo } from 'react';
 import { IssueItem } from '../interface/issue.interfcae';
 import '../../../css/components/Table.css'
 import { useNavigate } from 'react-router-dom';
+import { AlertTriangle, ArrowDown, ArrowUp, Book, Bug, CheckCircle, CheckCircle2, CheckSquare, CheckSquare2, Flag, MinusCircle, Sliders } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { AvatarImage } from '@radix-ui/react-avatar';
 
 interface IssueTableProps {
-  data: IssueItem[];              
+  data: IssueItem[];
   page: number;
   limit: number;
   total: number;
@@ -76,6 +84,48 @@ export default function IssueTable({
     return range;
   }, [page, totalPages]);
 
+const issuTypeIconMapper = (type: string) => {
+  const icons: Record<string, JSX.Element> = {
+    bug: <Bug style={{ color: 'red' }} />,
+    task: <CheckSquare2 height={20} style={{ color: 'green' }} />,
+    subtask: <CheckCircle style={{ color: 'red' }} />,
+    story: <Book style={{ color: 'red' }} />,
+    epic: <Book style={{ color: 'red' }} />,
+  };
+
+  const icon = icons[type];
+  if (!icon) return null;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger>{icon}</TooltipTrigger>
+      <TooltipContent className="bg-black text-white text-sm font-medium">
+        {type}
+      </TooltipContent>
+    </Tooltip>
+  );
+};
+
+const priorityIcon = (level: string) => {
+  const icons: Record<string, JSX.Element> = {
+    High: <ArrowUp color="red" size={24} />,
+    Medium: <MinusCircle color="orange" size={24} />,
+    Low: <ArrowDown color="green" size={24} />,
+  };
+
+  const icon = icons[level];
+  if (!icon) return null;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger>{icon}</TooltipTrigger>
+      <TooltipContent className="bg-black text-white text-sm font-medium">
+        {level} priority
+      </TooltipContent>
+    </Tooltip>
+  );
+};
+
   // ---------- Render ----------
   return (
     <div className="flex flex-col h-full gap-4 overflow-auto rounded-xl bg-white p-4 shadow-md">
@@ -84,13 +134,13 @@ export default function IssueTable({
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Type</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Assignee</TableHead>
               <TableHead>Priority</TableHead>
-              <TableHead>Type</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Due Date</TableHead>
-              <TableHead>ID</TableHead>
+              <TableHead>Key</TableHead>
             </TableRow>
           </TableHeader>
 
@@ -103,15 +153,30 @@ export default function IssueTable({
               </TableRow>
             ) : (
               data.map((issue) => (
-                <TableRow 
-                onClick={()=>navigate(`/issues/${issue.projectIssueId}`)}
-                key={issue.id}
-                className="hover:bg-muted/80 cursor-pointer py-8 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
+                <TableRow
+                  onClick={() => navigate(`/issues/${issue.projectIssueId}`)}
+                  key={issue.id}
+                  className="hover:bg-muted/80 cursor-pointer py-8 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
+                  <TableCell className="font-medium">{issuTypeIconMapper(issue.type)}</TableCell>
+
                   <TableCell className="font-medium w-[500px]">{issue.name}</TableCell>
-                  <TableCell>{issue.assignee ?? '-'}</TableCell>
+                  <TableCell className="font-medium flex gap-3 items-center">
+                    <Avatar>
+                      <AvatarImage src='/00024.png' alt={issue.assignee[0]} />
+                      {/* <AvatarFallback>
+                        {issue.assignee[0].toUpperCase()}
+                      </AvatarFallback> */}
+                    </Avatar>
+                    {issue.assignee}
+
+                  </TableCell>
+
+
+                  <TableCell className="font-medium">{priorityIcon(issue.priority)}</TableCell>
+
 
                   {/* ----- Priority Select ----- */}
-                  <TableCell>
+                  {/* <TableCell>
                     <Select
                       value={issue.priority}
                       onValueChange={(v) => onPriorityChange?.(issue.id, v)}
@@ -125,12 +190,12 @@ export default function IssueTable({
                         <SelectItem value="Low">Low</SelectItem>
                       </SelectContent>
                     </Select>
-                  </TableCell>
+                  </TableCell> */}
 
-                  <TableCell>{issue.type ?? '-'}</TableCell>
+                  <TableCell>{issue.status ?? '-'}</TableCell>
 
                   {/* ----- Status Select ----- */}
-                  <TableCell>
+                  {/* <TableCell>
                     <Select
                       value={issue.status}
                       onValueChange={(v) => onStatusChange?.(issue.id, v)}
@@ -144,7 +209,7 @@ export default function IssueTable({
                         <SelectItem value="On Review">On Review</SelectItem>
                       </SelectContent>
                     </Select>
-                  </TableCell>
+                  </TableCell> */}
 
                   <TableCell>{formatDate(issue.dueDate)}</TableCell>
                   <TableCell>{issue.projectIssueId ?? '-'}</TableCell>

@@ -11,7 +11,7 @@ const projectService = {
         return response;
     }),
     fetchUsersInProjects: asyncHandler(async (projectId:string): Promise<IResponse<UserProject[]>> => {
-        let url = `userProject?projectId=${projectId}`
+        let url = `userProject/users?projectId=${projectId}`
         const response: IResponse<UserProject[]> = await Instance.get(url);
         return response;
     }),

@@ -20,3 +20,21 @@ export const readableDateConverter = (date:string) => {
       year: 'numeric'
     })
 }
+
+
+
+export const getMentionsId = (text: string) => {
+  const regex = /\@\[[^\]]+\]\(([^)]+)\)/g;
+  const ids: string[] = [];
+
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    ids.push(match[1]);
+  }
+
+  return ids;
+}
+export const cleanMentionMarkup = (text: string) => {
+  if (!text) return text;
+  return text.replace(/@\[(.+?)\]\(.+?\)/g, "$1");
+};

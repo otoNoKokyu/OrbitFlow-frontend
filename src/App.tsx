@@ -9,13 +9,13 @@ import { faCircleCheck, faTriangleExclamation } from '@fortawesome/free-solid-sv
 import DnDKitBoard from './features/Dashboard/components';
 import { useSelector } from 'react-redux';
 import { RootState } from './store';
-import { FullscreenSpinner } from './components/ui/spinner';
+// import { FullscreenSpinner } from './components/ui/spinner';
 import Header from './features/Issues/components/Header';
 
 import IssueDetail from './features/Issues/components/IssueView';
 function App() {
   const loading = useSelector((state: RootState) => state.loading.count > 0);
-  if (loading) return <FullscreenSpinner />
+  // if (loading) return <FullscreenSpinner />
   return (
     <Fragment>
       <Routes>

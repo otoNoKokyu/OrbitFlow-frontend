@@ -13,7 +13,8 @@ export interface UserProject {
   userId: string;
   roleId: string;
   isActive: boolean;
-  user: User;
+  first_name:string;
+  last_name:string;
   project: Project;
   role: Role;
 }

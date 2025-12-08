@@ -1,72 +1,85 @@
 import { FC, useEffect, useState } from "react";
-import { Plus, X, FileText, Image as ImageIcon } from "lucide-react";
+import { Plus, FileText } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 type props = {
-  savedAttachments: string[] | [];
+  id: string;
+  savedAttachments: string[];
+  saveFn: (...args: any) => void;
+  refecth: () => void;
 };
 
 type Attachment = {
   name: string;
-  url?: string;
+  key?: string;
   file?: File;
   isLocal: boolean;
   isImage: boolean;
 };
 
-export const Attachments: FC<props> = ({ savedAttachments }) => {
+const S3_BASE = "https://orbitflow.s3.us-east-1.amazonaws.com/drafts/";
+
+export const Attachments: FC<props> = ({ id, savedAttachments, saveFn, refecth }) => {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const makeS3Url = (key: string) => `${S3_BASE}${key.split("_")[0]}/${key}`;
 
   useEffect(() => {
-    if(!savedAttachments || !savedAttachments.length) return;
-    const remoteFiles: Attachment[] = savedAttachments.map((url) => {
-      const name = url.split("/").pop() || "file";
+    if (!savedAttachments?.length) return;
 
-      const imageExtensions = ["png", "jpg", "jpeg", "gif", "webp"];
+    const remoteFiles: Attachment[] = savedAttachments.map((key) => {
+      const name = key.split("/").pop() || "file";
       const ext = name.split(".").pop()?.toLowerCase() || "";
+      const imageExtensions = ["png", "jpg", "jpeg", "gif", "webp"];
       const isImage = imageExtensions.includes(ext);
 
       return {
         name,
-        url,
+        key,
         isLocal: false,
         isImage,
       };
     });
 
     setAttachments((prev) => {
-      const filtered = prev.filter((a) => a.isLocal);
-      return [...remoteFiles, ...filtered];
+      const localOnly = prev.filter((f) => f.isLocal);
+      return [...remoteFiles, ...localOnly];
     });
   }, [savedAttachments]);
 
-  // Handle local uploads
-  const handleFiles = (files: FileList | null) => {
+  const getPreviewUrl = (item: Attachment) => {
+    if (item.isLocal && item.file) return URL.createObjectURL(item.file);
+    if (item.key) return makeS3Url(item.key);
+    return "";
+  };
+
+  const handleFiles = async (files: FileList | null) => {
     if (!files) return;
 
-    const newFiles: Attachment[] = Array.from(files).map((file) => ({
-      name: file.name,
-      file,
-      isLocal: true,
-      isImage: file.type.startsWith("image/"),
-    }));
+    const formData = new FormData();
+    Array.from(files)?.forEach((file) =>
+      formData.append("attachments", file)
+    );
 
-    setAttachments((prev) => [...prev, ...newFiles]);
+    setIsUploading(true);
+
+    try {
+      await saveFn(id, formData, true);
+      await refecth();
+    } finally {
+      setIsUploading(false);
+    }
   };
 
-  // Remove attachment
-  const removeFile = (idx: number) => {
-    setAttachments((prev) => prev.filter((_, i) => i !== idx));
-  };
-
-  // Image or Download click
   const handleClickFile = (item: Attachment) => {
+    const url = getPreviewUrl(item);
+    if (!url) return;
+
     if (item.isImage) {
-      const url = item.url ?? URL.createObjectURL(item.file!);
       setPreviewImage(url);
     } else {
-      const url = item.url ?? URL.createObjectURL(item.file!);
       const a = document.createElement("a");
       a.href = url;
       a.download = item.name;
@@ -75,81 +88,60 @@ export const Attachments: FC<props> = ({ savedAttachments }) => {
   };
 
   return (
-    <section className="mt-4">
+    <section className="mt-4 relative">
       <h3 className="text-sm font-semibold text-gray-700 mb-3">
         Attachments ({attachments.length})
       </h3>
 
-      {/* Grid: 3 per row */}
-      <div className="grid grid-cols-3 gap-4">
-
-        {/* Existing attachments */}
+      <div className="grid grid-cols-3 gap-4 relative">
         {attachments.map((item, idx) => {
-          const previewUrl =
-            item.url ?? URL.createObjectURL(item.file || new Blob());
+          const previewUrl = getPreviewUrl(item);
 
           return (
             <div
               key={idx}
               className="relative border rounded-md p-3 bg-white shadow-sm hover:shadow transition cursor-pointer"
-              onClick={() => handleClickFile(item)}
+              onClick={() => !isUploading && handleClickFile(item)}
             >
-              {/* Remove button */}
-              <button
-                className="absolute top-1 right-1 bg-white rounded-full p-1 shadow hover:bg-gray-100"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeFile(idx);
-                }}
-              >
-                <X className="w-4 h-4 text-gray-700" />
-              </button>
-
-              {/* Thumbnail or icon */}
               <div className="flex items-center justify-center mb-3 h-20 bg-gray-50 rounded">
                 {item.isImage ? (
-                  <img
-                    src={previewUrl}
-                    alt={item.name}
-                    className="max-h-full rounded"
-                  />
+                  <img src={previewUrl} alt={item.name} className="max-h-full rounded" />
                 ) : (
                   <FileText className="w-8 h-8 text-gray-500" />
                 )}
               </div>
 
-              {/* Name */}
               <p className="text-xs font-medium text-gray-800 truncate">
                 {item.name}
               </p>
-
-              {/* No file size from backend → skip */}
             </div>
           );
         })}
 
-        {/* UPLOAD TILE */}
+        {/* Upload Button */}
         <label className="border rounded-md p-3 bg-gray-50 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition">
           <Plus className="w-6 h-6 text-gray-600 mb-1" />
           <span className="text-xs text-gray-600">Add attachment</span>
 
-          <input
-            type="file"
-            multiple
-            className="hidden"
-            onChange={(e) => handleFiles(e.target.files)}
-          />
+          <input type="file" multiple className="hidden" onChange={(e) => handleFiles(e.target.files)} />
         </label>
       </div>
 
-      {/* Image Preview Modal */}
+      {/* ⛔ Upload Overlay */}
+      {isUploading && (
+        <div className="absolute inset-0 bg-white/30 backdrop-blur-[1px] flex flex-col items-center justify-center z-20">
+          <div className="animate-spin h-6 w-6 border-4 border-black border-t-transparent rounded-full mb-2"></div>
+          <p className="text-sm font-medium">Uploading...</p>
+        </div>
+      )}
+
       <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
         <DialogContent className="p-0 bg-transparent border-none shadow-none">
           {previewImage && (
             <img
               src={previewImage}
               alt="preview"
-              className="max-w-full max-height-[90vh] rounded-lg shadow-lg"
+              className="max-w-full max-h-[90vh] rounded-lg shadow-lg"
             />
           )}
         </DialogContent>

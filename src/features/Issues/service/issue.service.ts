@@ -39,8 +39,12 @@ export const issueService = {
     return response;
   }),
   updateIssue: asyncHandler(
-    async ( id: string, body: Partial<IssueItem> ) => {
-      const response: IResponse<string> = await Instance.put(`/issues/${id}`, body);
+    async (id: string, body: Partial<IssueDetail>, uploadingFiles?: boolean) => {
+      let url = `/issues/${id}`
+      if(uploadingFiles) url = url+`/?attachment=${true}`
+      const response: IResponse<string> = await Instance.put(url, body, {
+        headers: { "Content-Type": uploadingFiles ? "multipart/form-data" : 'application/json' }
+      });
       return response;
     }
   ),

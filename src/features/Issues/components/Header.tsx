@@ -64,7 +64,12 @@ const Header = () => {
   option?: string
 ) => {
   setFilter((prev) => {
-    if (option === 'reset') return '?page=1';
+    if (option === 'reset')  {
+      if (inputRef.current) {
+        inputRef.current.value = '';
+      }
+      return '?page=1'
+    };
 
     const value =
       option === 'page'
@@ -129,10 +134,10 @@ const Header = () => {
           className="max-w-xs py-5 pl-5 h-9 border-gray-200 text-sm pr-12" />
         <span className='relative right-13 hover:cursor-pointer'>
           <Search onClick={()=>{
-            console.log(inputRef)
             onFilterChange(inputRef.current?.value ?? '', 'anyKey')}} />
         </span>
         <NewSelect
+          
           key={resetKey + "-project"}
           placeholder="Project"
           values={projectOptions}

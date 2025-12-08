@@ -48,18 +48,20 @@ const NewSelect: React.FC<NewSelectProps> = ({
   return (
     <div className={cn(containerClassName)}>
       <Select
+        
         disabled={disabled}
         defaultValue={defaultValue}
         onValueChange={newOnValueChange}
         value={value}
       >
         <SelectTrigger
+          
           className={cn(
             "p-5 rounded-sm flex items-center data-[placeholder]:text-muted-foreground",
             triggerClassName
           )}
         >
-          <SelectValue placeholder={placeholder} />
+          <SelectValue  placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent className={cn("w-full rounded-sm", contentClassName)}>
           <SelectGroup>

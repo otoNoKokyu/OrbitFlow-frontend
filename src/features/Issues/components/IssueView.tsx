@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Paperclip,
   MessageSquare,
@@ -7,7 +7,11 @@ import {
   Clock,
   ChevronDown,
   MoreHorizontal,
-  CheckSquare2
+  CheckSquare2,
+  Plus,
+  Edit3,
+  Edit2,
+  Edit
 } from 'lucide-react';
 
 import { Card } from '@/components/ui/card';
@@ -18,7 +22,7 @@ import { Separator } from '@/components/ui/separator';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useFetch } from '@/hooks/useFetch';
 import { cleanMentionMarkup, getMentionsId, isEmptyObject, readableDateConverter } from '@/utility/objectUtils';
-import { issueService } from '../service/issue.service';
+import { creatIssue, issueService } from '../service/issue.service';
 import { IssueDetail } from '../interface/issue.interfcae';
 import { Mention, MentionsInput } from 'react-mentions';
 import projectService from '@/features/Navigation/service/project.service';
@@ -26,13 +30,20 @@ import { OverlaySpinner } from '@/components/ui/spinner';
 import Comments from './IssueView/Comments';
 import { Description } from './IssueView/Description';
 import { Attachments } from './IssueView/Attachments';
+import CreateIssueDemo, { CreateIssueModal } from './Create';
+import { Progress } from '@/components/ui/progress';
+import classNames from 'classnames';
+import Modal from '@/common/component/Modal';
+import TimeLogEditor from './IssueView/AddTimeLog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import NewSelect from '@/components/ui/NewSelect';
 // import '../../../css/pages/issues.css'
 
 // --------------- LEFT SIDE -----------------
 // 
 
 
-const IssueDetailLeft: React.FC<{ issue: IssueDetail, refetch: ()=>void }> = ({ issue,refetch }) => {
+const IssueDetailLeft: React.FC<{ issue: IssueDetail, refetch: () => void }> = ({ issue, refetch }) => {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(issue.description ?? "");
   const { data } = useFetch(projectService.fetchUsersInProjects, issue.projectId)
@@ -52,7 +63,7 @@ const IssueDetailLeft: React.FC<{ issue: IssueDetail, refetch: ()=>void }> = ({ 
     <div className="space-y-6">
 
       {/* Description */}
-      <Description description={issue.description} issueId={issue.id} refetch={refetch}/>
+      <Description description={issue.description} issueId={issue.id} refetch={refetch} />
 
       {/* Subtasks */}
       <section>
@@ -110,7 +121,7 @@ const IssueDetailLeft: React.FC<{ issue: IssueDetail, refetch: ()=>void }> = ({ 
       <Separator />
 
       {/* Attachments */}
-        <Attachments savedAttachments={issue.attachments!}/>
+      <Attachments id={issue.id} refecth={refetch} saveFn={issueService.updateIssue} savedAttachments={issue.attachments!} />
 
       <Separator />
 
@@ -126,42 +137,63 @@ const IssueDetailLeft: React.FC<{ issue: IssueDetail, refetch: ()=>void }> = ({ 
 };
 
 
-
 // --------------- RIGHT SIDE --------------------
-const IssueDetailRight: React.FC<{ issue: IssueDetail }> = ({ issue }) => {
+const IssueDetailRight: React.FC<{ issue: IssueDetail, updateData: (data: Partial<IssueDetail>) => void, refetch: () => void }> = ({ issue, updateData, refetch }) => {
 
   const project = issue?.project?.name
+  const { data } = useFetch(projectService.fetchUsersInProjects, issue.projectId)
 
-  const assigneeName = issue.assignee?.first_name ?? issue.assignee?.username ?? "Unassigned";
-  const reporterName = issue.reporter?.first_name ?? issue.reporter?.username ?? "Unknown";
+  const transformedData = [
+    { id: "Unassigned", display: "Unassigned" },
+    ...(data?.map((e) => ({
+      id: e.userId,
+      display: `${e.first_name} ${e.last_name}`,
+    })) ?? [])
+  ];
+  const assignee = issue.assignee?.user_id ?? "";
+  const reporter = issue.reporter?.user_id ?? "";
+  const updateRepandAssignee = async (
+    obj: Partial<Pick<IssueDetail, 'assigneeId' | 'reporterId'>>
+  ) => {
+    await updateData(obj)
+    refetch()
+  }
+  const [openTimelog, setOpenTimelog] = useState(false);
+
 
   return (
     <div className="space-y-4">
 
-      {/* Status */}
-      <div>
-        <label className="text-xs font-semibold text-gray-600 uppercase mb-2 block">
-          Status
-        </label>
-        <Button variant="outline" className="w-full justify-between">
-          <span className="flex items-center gap-2">{issue.status}</span>
-          <ChevronDown className="w-4 h-4" />
-        </Button>
-      </div>
-
       {/* Priority */}
-      <div>
-        <label className="text-xs font-semibold text-gray-600 uppercase mb-2 block">
-          Priority
-        </label>
-        <Button variant="outline" className="w-full justify-between">
-          <span className="flex items-center gap-2">
-            <Tag className="w-4 h-4 text-orange-500" />
-            {issue.priority}
-          </span>
-          <ChevronDown className="w-4 h-4" />
-        </Button>
-      </div>
+      <span >Change Priority</span>
+      <NewSelect
+        placeholder="Priority"
+        values={[
+          { id: '1', value: 'High' },
+          { id: '2', value: 'Medium' },
+          { id: '3', value: 'Low' }
+        ]}
+        value={issue.priority}
+        containerClassName="bg-gray-100 max-w-[130px] text-gray-700 font-medium my-3"
+        triggerClassName="border-0"
+        onValueChange={(e) => updateData({ priority: e.value })}
+      />
+      {/* Status */}
+      <span >Change Status</span>
+
+      <NewSelect
+        placeholder="Status"
+        values={[
+          { id: '1', value: 'To Do' },
+          { id: '2', value: 'In Progress' },
+          { id: '3', value: 'Done' }
+        ]}
+        option="status"
+        value={issue.status}
+        containerClassName="bg-gray-100 max-w-[130px] text-gray-700 font-medium my-3"
+        triggerClassName="border-0"
+        onValueChange={(e) => updateData({ status: e.value })}
+      />
 
       <Separator />
 
@@ -170,12 +202,24 @@ const IssueDetailRight: React.FC<{ issue: IssueDetail }> = ({ issue }) => {
         <label className="text-xs font-semibold text-gray-600 uppercase mb-2 block">
           Assignee
         </label>
-        <div className="flex items-center gap-2 p-2 rounded hover:bg-gray-50">
-          <Avatar className="w-8 h-8">
-            <AvatarFallback>{assigneeName[0]}</AvatarFallback>
-          </Avatar>
-          <span className="text-sm text-gray-900">{assigneeName}</span>
-        </div>
+        <Select onValueChange={(v) => {
+          updateRepandAssignee({assigneeId:v})
+        }} value={assignee}>
+          <SelectTrigger className={`py-6  border-0 shadow-none hover:bg-gray-100  bg-transparent px-3 text-md mt-1 w-[250px] py-6 px-3 !text-md`}>
+            <SelectValue placeholder="Unassigned" />
+          </SelectTrigger>
+          <SelectContent>
+            {transformedData.map((val) => (
+              <SelectItem className='m-1 text-lg hover:bg-gray-100' key={val.id} value={val.id}>
+                <Avatar className="w-8 h-8 bg-gray-200">
+                  <AvatarFallback>{val.display[0]}</AvatarFallback>
+                </Avatar>
+                <span className="text-sm text-gray-900">{val.display}</span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
       </div>
 
       {/* Reporter */}
@@ -183,13 +227,52 @@ const IssueDetailRight: React.FC<{ issue: IssueDetail }> = ({ issue }) => {
         <label className="text-xs font-semibold text-gray-600 uppercase mb-2 block">
           Reporter
         </label>
-        <div className="flex items-center gap-2 p-2 rounded hover:bg-gray-50">
-          <Avatar className="w-8 h-8">
-            <AvatarFallback>{reporterName[0]}</AvatarFallback>
-          </Avatar>
-          <span className="text-sm text-gray-900">{reporterName}</span>
-        </div>
+        <Select onValueChange={(v)=>updateRepandAssignee({reporterId:v})} value={reporter}>
+          <SelectTrigger className={`py-6  border-0 shadow-none hover:bg-gray-100  bg-transparent px-3 text-md mt-1 w-[250px] py-6 px-3 !text-md`}>
+            <SelectValue placeholder="Unassigned" />
+          </SelectTrigger>
+          <SelectContent>
+            {transformedData.map((val) => (
+              <SelectItem className='m-1 text-lg hover:bg-gray-100' key={val.id} value={val.id}>
+                <Avatar className="w-8 h-8 bg-gray-200">
+                  <AvatarFallback>{val.display[0]}</AvatarFallback>
+                </Avatar>
+                <span className="text-sm text-gray-900">{val.display}</span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
+
+      <Separator />
+      <span className='text-md font-medium flex items-center'>
+        Time tracking
+        <Button variant={'ghost'} size={'sm'} className='ml-3 hover:cursor-pointer' onClick={() => setOpenTimelog(true)}>
+          <Edit />
+        </Button>
+
+      </span>
+
+      <div>
+        Estimated time
+        <span>
+          <Progress
+            className={classNames("w-2/3 h-[15px] rounded-sm border bg-white", issue.estimate! > 0 && 'bg-green-600 [&>div]:bg-green-600')}
+            value={issue.estimate! > 0 ? 100 : 0} />
+          {issue.estimate ?? 0} hours
+        </span>
+      </div>
+      <div className="mt-3 space-y-2 w-2/3">
+        <span className="font-medium text-sm">Logged time</span>
+
+        <Progress
+          value={(issue?.loggedTime! / issue.estimate!) * 100}
+          className="w-full h-[15px] bg-white rounded-sm border [&>div]:bg-blue-600 cursor-pointer"
+        />
+        {issue?.loggedTime! ?? 0} hours
+      </div>
+
+
 
       <Separator />
 
@@ -220,6 +303,13 @@ const IssueDetailRight: React.FC<{ issue: IssueDetail }> = ({ issue }) => {
           Updated: {readableDateConverter(issue.updatedAt)}
         </span>
       </div>
+      <TimeLogEditor
+        onClose={() => setOpenTimelog(false)}
+        onSubmit={(estimate, logged) => updateData({ estimate, loggedTime: logged })}
+        open={openTimelog}
+        defaultEstimate={issue.estimate!}
+        defaultLogged={issue.loggedTime!}
+      />
     </div>
   );
 };
@@ -229,9 +319,31 @@ const IssueDetailRight: React.FC<{ issue: IssueDetail }> = ({ issue }) => {
 // --------------- MAIN COMPONENT --------------------
 const IssueDetailS: React.FC = () => {
   const { id } = useParams();
-  const { data, loading, refetch } = useFetch(issueService.fetchIssueByProjectIssueId, id);
+  const { data: issue, loading, refetch } = useFetch(issueService.fetchIssueByProjectIssueId, id);
+  const [showCreateIssue, setShowCreateIssue] = useState(false);
+  const [updateBody, setUpdateBody] = useState<Partial<IssueDetail> | null>(null);
 
-  if (loading || !data || isEmptyObject(data)) return null;
+  const handleUpdate = (body: Partial<IssueDetail>) => setUpdateBody(body)
+
+
+  useEffect(() => {
+    if (!updateBody) return;
+
+    const run = async () => {
+      await issueService.updateIssue(issue.id, updateBody);
+      await refetch();
+      setUpdateBody(null);
+    };
+
+    run();
+  }, [updateBody]);
+
+  if (loading && !issue) return null;
+
+  const handleSubmit = async (formData: FormData) => {
+    await creatIssue(formData);
+    await refetch()
+  };
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
@@ -242,24 +354,37 @@ const IssueDetailS: React.FC = () => {
         </div>
 
         <h1 className="text-2xl font-semibold text-gray-900">
-          {data?.name ?? "Untitled Issue"}
+          {issue?.name ?? "Untitled Issue"}
         </h1>
+        {issue?.type !== 'subtask' && (
+          <Button
+            onClick={() => setShowCreateIssue(true)}
+            className='hover:cursor-pointer' variant={'outline'}>
+            <Plus />
+          </Button>)}
       </div>
+
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 overflow-hidden">
         <div className="lg:col-span-2 overflow-y-auto">
           <div className="p-6">
-            <IssueDetailLeft issue={data} refetch={refetch} />
+            <IssueDetailLeft issue={issue!} refetch={refetch} />
           </div>
         </div>
 
         <div className="lg:col-span-1 border-l bg-white overflow-y-auto">
           <div className="p-6">
-            <IssueDetailRight issue={data} />
+            <IssueDetailRight refetch={refetch} issue={issue!} updateData={handleUpdate} />
           </div>
         </div>
       </div>
-
+      <CreateIssueModal
+        onClose={() => setShowCreateIssue(false)}
+        onSubmit={handleSubmit}
+        open={showCreateIssue}
+        projectId={issue?.projectId}
+        parentId={issue?.id}
+      />
     </div>
   );
 };

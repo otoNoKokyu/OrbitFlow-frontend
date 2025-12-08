@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { X, Tag, AlertCircle, Paperclip } from 'lucide-react';
 import '../../../css/pages/issues.css'
@@ -38,7 +38,7 @@ interface CreateIssueModalProps {
 }
 
 
-const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
+export const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
   open,
   onClose,
   onSubmit,
@@ -46,10 +46,11 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
   projectId = '020212ea-0e5a-48d9-9ea4-3dbc045fe166'
 }) => {
 
-  const { register, handleSubmit, control, formState: { isSubmitting }, reset } = useForm<IssueFormData>();
+  const { register, handleSubmit, control, formState: { isSubmitting }, reset, setValue } = useForm<IssueFormData>();
   const { data: assigneesAndReporter, loading } = useFetch(userProjectService.fetchUsersInProjects, projectId);
-  if (loading) return null;
-  const projectUserOptions = selectConverter(assigneesAndReporter ?? [], (x) => x?.projectId, (x) => `${x.first_name} ${x.last_name}`);
+  const projectUserOptions = selectConverter(assigneesAndReporter ?? [], (x) => x?.userId, (x) => `${x.first_name} ${x.last_name}`);
+  console.log(projectUserOptions)
+
 
   const handleFormSubmit = async (data: IssueFormData) => {
     try {
@@ -60,9 +61,9 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
       formData.append("priority", data.priority || "");
       formData.append("assigneeId", data.assigneeId || "");
       formData.append("reporterId", data.reporterId || "");
-      formData.append("estimation", data.estimate || '');
-      formData.append('projectId',projectId)
-      // if(parentId) formData.append('parentId',parentId)
+      formData.append("estimate", data.estimate || '');
+      formData.append('projectId', projectId)
+      if (parentId) formData.append('parentId', parentId)
 
       data.attachments?.forEach((file) => formData.append("attachments", file));
       await onSubmit(formData);
@@ -74,11 +75,18 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
     }
   };
 
+  useEffect(() => {
+    if (parentId) setValue("type", "subtask");
+  }, [parentId, open]);
+
+  if (loading) return null;
+
   const handleClose = () => {
     reset();
     onClose();
+    reset()
   };
-  
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -86,18 +94,18 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
           <DialogTitle className="text-xl font-semibold">Create Issue</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <form className='space-y-6' onSubmit={handleSubmit(handleFormSubmit)}>
           <div className="space-y-2">
             <Label htmlFor="type">Issue Type <span className="text-red-500">*</span></Label>
             <Controller
               name="type"
               control={control}
               rules={{ required: 'Issue type is required' }}
-              render={({ field, fieldState:{error} }) => (
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger className={`py-6 px-3 text-md mt-1 w-[350px] bg-gray-100 ${ error
-                      ? "border-red-500 p-4 py-6 px-3 text-md"
-                      : "py-6 px-3 !text-md"}`}>
+              render={({ field, fieldState: { error } }) => (
+                <Select onValueChange={field.onChange} value={field.value} disabled={!!parentId}>
+                  <SelectTrigger className={`py-6 px-3 text-md mt-1 w-[350px] bg-gray-100 ${error
+                    ? "border-red-500 p-4 py-6 px-3 text-md"
+                    : "py-6 px-3 !text-md"}`}>
                     <SelectValue placeholder="Select issue type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -186,14 +194,17 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
               control={control}
               render={({ field }) => (
                 <Select
-                  onValueChange={(value) => field.onChange(value??'')}
+                  onValueChange={(value) => {
+                    console.log(value)
+                    field.onChange(value ?? '')
+                  }}
                   value={field.value}
                 >
                   <SelectTrigger disabled={loading} className='py-6 px-3 text-md mt-1 w-[350px] bg-gray-100'>
                     <SelectValue placeholder="select assignee" />
                   </SelectTrigger>
                   <SelectContent>
-                    {/* <SelectItem value="unassigned">Unassigned</SelectItem> */}
+                    <SelectItem value="unassigned">Unassigned</SelectItem>
                     {projectUserOptions.map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         <div className="flex items-center gap-2">
@@ -218,8 +229,8 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
               control={control}
               render={({ field }) => (
                 <Select
-                  onValueChange={(value) => field.onChange( value??'')}
-                  value={field.value }
+                  onValueChange={(value) => field.onChange(value ?? '')}
+                  value={field.value}
                 >
                   <SelectTrigger disabled={loading} className='py-6 px-3 text-md mt-1 w-[350px] bg-gray-100'>
                     <SelectValue placeholder="select reporter" />
@@ -228,12 +239,10 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
                     {/* <SelectItem value="unassigned">Unassigned</SelectItem> */}
                     {projectUserOptions.map((user) => (
                       <SelectItem key={user.id} value={user.id}>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="w-8 h-8">
-                            <AvatarFallback className='!bg-gray-300'>{user.label[0]}</AvatarFallback>
-                          </Avatar>
-                          {user.label}
-                        </div>
+                        <Avatar className="w-8 h-8">
+                          <AvatarFallback className='!bg-gray-300'>{user.label[0]}</AvatarFallback>
+                        </Avatar>
+                        {user.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -263,7 +272,7 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
                 control={control}
                 render={({ field }) => (
                   <FileUploader
-                    name = 'attachments'
+                    name='attachments'
                     value={field.value ?? []}
                     onChange={(files) => field.onChange(files)}
                   />
@@ -275,14 +284,15 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
 
           {/* Footer */}
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={handleClose} disabled={isSubmitting}>
+            <Button variant="outline" type='reset' onClick={handleClose} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button onClick={handleSubmit(handleFormSubmit)} disabled={isSubmitting}>
+            <Button type='submit' disabled={isSubmitting}>
               {isSubmitting ? 'Creating...' : 'Create Issue'}
             </Button>
           </DialogFooter>
-        </div>
+        </form>
+
       </DialogContent>
     </Dialog >
   );

@@ -34,68 +34,68 @@ function IssueCard({ assignment }: { assignment: IssueItem }) {
       .slice(0, 2);
   };
 
-  // return (
-  //   <div className="bg-white rounded-sm shadow-sm hover:shadow-md transition-shadow w-full max-w-[325px]">
-  //     <div className="p-4">
-  //       {/* Title and Description */}
-  //       <h3 className="text-2xl font-medium mb-1 text-gray-900">{assignment.name}</h3>
-  //       <p className="my-2 font-normal overflow-hidden text-ellipsis whitespace-nowrap text-gray-600">
-  //         {assignment.description ?? 'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Harum, ducimus?'}
-  //       </p>
+  return (
+    <div className="bg-white rounded-sm shadow-sm hover:shadow-md transition-shadow w-full max-w-[325px]">
+      <div className="p-4">
+        {/* Title and Description */}
+        <h3 className="text-2xl font-medium mb-1 text-gray-900">{assignment.name}</h3>
+        <p className="my-2 font-normal overflow-hidden text-ellipsis whitespace-nowrap text-gray-600">
+          {assignment.description ?? 'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Harum, ducimus?'}
+        </p>
 
-  //       {/* Assignees Section */}
-  //       <div className="flex items-center justify-between mb-3">
-  //         <div className="flex flex-col">
-  //           <span className="text-gray-700 mb-1 text-sm">Assignees:</span>
-  //           <div className="flex -space-x-2">
-  //             <div className="h-10 w-10 rounded-full bg-slate-300 flex items-center justify-center text-gray-700 text-lg font-medium border-2 border-white">
-  //               {assignment.assignee ? getInitials(assignment.assignee) : 'NA'}
-  //             </div>
-  //           </div>
-  //         </div>
-  //       </div>
+        {/* Assignees Section */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex flex-col">
+            <span className="text-gray-700 mb-1 text-sm">Assignees:</span>
+            <div className="flex -space-x-2">
+              <div className="h-10 w-10 rounded-full bg-slate-300 flex items-center justify-center text-gray-700 text-lg font-medium border-2 border-white">
+                {assignment.assignee ? getInitials(assignment.assignee) : 'NA'}
+              </div>
+            </div>
+          </div>
+        </div>
 
-  //       {/* Due Date and Priority */}
-  //       <div className="flex items-center justify-between mb-4">
-  //         <div className="flex items-center gap-1 text-gray-500 text-sm">
-  //           <Calendar className="h-5 w-5" />
-  //           <span>{new Date(assignment?.dueDate).toLocaleDateString()}</span>
-  //         </div>
-  //         <span className={`px-2.5 py-0.5 rounded-md text-sm font-normal border ${getPriorityColor(assignment.priority)}`}>
-  //           {assignment.priority}
-  //         </span>
-  //       </div>
+        {/* Due Date and Priority */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-1 text-gray-500 text-sm">
+            <Calendar className="h-5 w-5" />
+            <span>{new Date(assignment?.dueDate).toLocaleDateString()}</span>
+          </div>
+          <span className={`px-2.5 py-0.5 rounded-md text-sm font-normal border ${getPriorityColor(assignment.priority)}`}>
+            {assignment.priority}
+          </span>
+        </div>
 
-  //       {/* Metrics */}
-  //       <div className="flex items-center justify-between text-gray-500 border-t border-gray-200 pt-3 text-sm">
-  //         <div className="flex items-center gap-1">
-  //           <MessageSquare className="h-5 w-5" />
-  //           <span>{assignment?.comments?.length || 0}</span>
-  //         </div>
-  //         <div className="flex items-center gap-1">
-  //           <ThumbsUp className="h-5 w-5" />
-  //           <span>{assignment.projectIssueId}</span>
-  //         </div>
-  //         <div className="flex items-center gap-2">
-  //           <Clock className="h-5 w-5" />
-  //           <span>{assignment.remaining}h</span>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   </div>
-  // );
-
-  return(
-    <div>
-      <p>{assignment.assignee}</p>
-      <p>{assignment.assignee}</p>
-      <p>{assignment.assignee}</p>
-      <p>{assignment.assignee}</p>
-      <p>{assignment.assignee}</p>
-      <p>{assignment.assignee}</p>
-      <p>{assignment.assignee}</p>
+        {/* Metrics */}
+        <div className="flex items-center justify-between text-gray-500 border-t border-gray-200 pt-3 text-sm">
+          <div className="flex items-center gap-1">
+            <MessageSquare className="h-5 w-5" />
+            <span>{assignment?.comments?.length || 0}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <ThumbsUp className="h-5 w-5" />
+            <span>{assignment.projectIssueId}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            <span>{assignment.remaining}h</span>
+          </div>
+        </div>
+      </div>
     </div>
-  )
+  );
+
+  // return(
+  //   <div>
+  //     <p>{assignment.assignee}</p>
+  //     <p>{assignment.assignee}</p>
+  //     <p>{assignment.assignee}</p>
+  //     <p>{assignment.assignee}</p>
+  //     <p>{assignment.assignee}</p>
+  //     <p>{assignment.assignee}</p>
+  //     <p>{assignment.assignee}</p>
+  //   </div>
+  // )
 }
 
 export default IssueCard;

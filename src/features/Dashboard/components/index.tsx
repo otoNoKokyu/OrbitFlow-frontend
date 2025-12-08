@@ -1,201 +1,210 @@
 import React, { useEffect, useState } from "react";
 import {
   DndContext,
-  closestCenter,
+  rectIntersection,
   DragEndEvent,
   DragStartEvent,
   DragOverlay,
   PointerSensor,
   useSensor,
   useSensors,
+  useDroppable,
 } from "@dnd-kit/core";
+
 import {
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
   arrayMove,
 } from "@dnd-kit/sortable";
+
 import { CSS } from "@dnd-kit/utilities";
 import { Plus, GripVertical } from "lucide-react";
-import { IssueItem } from "@/features/Issues/interface/issue.interfcae";
+import IssueCard from "./IssueCard";
+// import { IssueItem } from "@/features/Issues/interface/issue.interface";
 import { fetchUserDashboardData } from "../service/dashboard.service";
+import { useFetch } from "@/hooks/useFetch";
 import authService from "@/features/Authentication/service/auth.service";
 import { KeyMeta } from "@/common/types/Auth/auth";
-import { useFetch } from "@/hooks/useFetch";
-import IssueCard from "./IssueCard";
+import { IssueItem } from "@/features/Issues/interface/issue.interfcae";
 
-// ---------- TYPES ----------
-type Column = {
-  id: string;
-  status: string;
-  assignments: IssueItem[];
-};
-
-type Board = Column[];
-
-// ---------- SORTABLE ITEM ----------
+/* ---------------------------------------------- */
+/*                SORTABLE ASSIGNMENT             */
+/* ---------------------------------------------- */
 function SortableAssignment({ assignment }: { assignment: IssueItem }) {
+  const id = String(assignment.id);
+
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: assignment.id });
+    useSortable({ id });
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 10 : 0,
+    opacity: isDragging ? 0.6 : 1,
+    zIndex: isDragging ? 99 : undefined,
+    cursor: "grab",
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="mb-3">
-      {/* DRAG HANDLE */}
-      <div
-        {...attributes}
-        {...listeners}
-        className="flex items-center gap-2 p-1 cursor-grab active:cursor-grabbing bg-gray-50 border border-gray-200 rounded-t-sm"
-      >
+    <div ref={setNodeRef} style={style} className="mb-3" {...attributes} {...listeners}>
+      {/* Optional drag handle */}
+      <div className="flex items-center gap-2 p-1 bg-gray-50 border border-gray-200 rounded-t-sm">
         <GripVertical className="w-4 h-4 text-gray-400" />
         <span className="text-xs text-gray-400">Drag</span>
       </div>
 
-      {/* CARD CONTENT - pointer-events-none prevents interference */}
-      <div className="pointer-events-none">
-        <IssueCard assignment={assignment} />
-      </div>
+      <IssueCard assignment={assignment} />
     </div>
   );
 }
 
-// ---------- COLUMN COMPONENT ----------
-function ColumnComponent({ column }: { column: Column }) {
+/* ---------------------------------------------- */
+/*                   COLUMN                        */
+/* ---------------------------------------------- */
+function ColumnComponent({ column }: { column: any }) {
+  const { setNodeRef, isOver } = useDroppable({ id: column.id });
+
   return (
     <div
+      ref={setNodeRef}
       style={{
-        backgroundColor: "#f3f1f1",
+        backgroundColor: isOver ? "#e8f0fe" : "#f3f1f1",
         padding: 16,
         borderRadius: 8,
-        minWidth: 280,
+        minWidth: 300,
         margin: 8,
-        flex: 1,
         display: "flex",
         flexDirection: "column",
+        transition: "background-color .2s",
       }}
     >
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex items-center mb-4">
         <h3 className="text-xl font-[400]">{column.status}</h3>
-        <span className="text-gray-700 ml-1">{`(${column.assignments.length})`}</span>
+        <span className="text-gray-700 ml-2">{`(${column.assignments.length})`}</span>
         <Plus className="ml-auto text-gray-500 cursor-pointer" />
       </div>
 
       <SortableContext
-        items={column.assignments.map((assignment) => assignment.id)}
+        items={column.assignments.map((a) => String(a.id))}
         strategy={verticalListSortingStrategy}
       >
-        {column.assignments.map((assignment) => (
-          <SortableAssignment key={assignment.id} assignment={assignment} />
+        {column.assignments.map((a) => (
+          <SortableAssignment key={String(a.id)} assignment={a} />
         ))}
       </SortableContext>
     </div>
   );
 }
 
-// ---------- MAIN BOARD ----------
+/* ---------------------------------------------- */
+/*                MAIN BOARD COMPONENT            */
+/* ---------------------------------------------- */
 export default function DnDKitBoard() {
-  const [board, setBoard] = useState<Board>([]);
+  const [board, setBoard] = useState<any[]>([]);
   const [activeAssignmentId, setActiveAssignmentId] = useState<string | null>(null);
+
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+
   const { user_id } = authService.getUserMeta([KeyMeta.USER]);
   const { data: issueData, loading } = useFetch(fetchUserDashboardData, user_id);
 
-  console.log(issueData)
-
+  /* ------------ Initialize Board Columns ----------- */
   useEffect(() => {
-    if (!Array.isArray(issueData?.data) || issueData.data.length === 0) return;
-
-    const { data } = issueData;
+    if (!issueData?.data) return;
 
     const statusMap: Record<IssueItem["status"], IssueItem[]> = {
       "To Do": [],
       "In Progress": [],
       "On Review": [],
-      Done: [],
+      Done: [], // if you don't have Done, ignore this
     };
 
-    for (const issue of data) {
-      if (statusMap[issue.status]) statusMap[issue.status].push(issue);
-    }
+    issueData.data.forEach((issue: IssueItem) => {
+      statusMap[issue.status]?.push(issue);
+    });
 
     setBoard([
       { id: "todo", status: "To Do", assignments: statusMap["To Do"] },
-      { id: "in-progress", status: "In Progress", assignments: statusMap["In Progress"] },
-      { id: "on-review", status: "On Review", assignments: statusMap["On Review"] },
-      { id: "done", status: "Done", assignments: statusMap["Done"] },
+      { id: "progress", status: "In Progress", assignments: statusMap["In Progress"] },
+      { id: "review", status: "On Review", assignments: statusMap["On Review"] },
     ]);
   }, [issueData]);
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
-
-  const findColumnByAssignmentId = (assignmentId: string) =>
-    board.find((col) => col.assignments.some((a) => a.id === assignmentId));
-
+  /* ---------------------------------------------- */
+  /*                DRAG START                     */
+  /* ---------------------------------------------- */
   const handleDragStart = (event: DragStartEvent) => {
-    setActiveAssignmentId(event.active.id as string);
+    setActiveAssignmentId(String(event.active.id));
   };
 
+  /* ---------------------------------------------- */
+  /*                   DRAG END                     */
+  /* ---------------------------------------------- */
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    if (!over) {
-      setActiveAssignmentId(null);
-      return;
-    }
 
-    const activeId = active.id as string;
-    const overId = over.id as string;
+    setActiveAssignmentId(null);
 
-    const sourceCol = findColumnByAssignmentId(activeId);
-    const destCol = board.find(
-      (col) => col.id === overId || col.assignments.some((a) => a.id === overId)
+    if (!over) return;
+
+    const activeId = String(active.id);
+    const overId = String(over.id);
+
+    // Find source column
+    const sourceColIndex = board.findIndex((col) =>
+      col.assignments.some((a: IssueItem) => String(a.id) === activeId)
     );
 
-    if (!sourceCol || !destCol) {
-      setActiveAssignmentId(null);
-      return;
-    }
+    if (sourceColIndex === -1) return;
 
-    const sourceColIndex = board.indexOf(sourceCol);
-    const destColIndex = board.indexOf(destCol);
-    const sourceItemIndex = sourceCol.assignments.findIndex((a) => a.id === activeId);
-    const destItemIndex = destCol.assignments.findIndex((a) => a.id === overId);
+    // Find destination column
+    const destColIndex = board.findIndex(
+      (col) => col.id === overId || col.assignments.some((a: any) => String(a.id) === overId)
+    );
 
-    const updated = [...board];
-    const [moved] = updated[sourceColIndex].assignments.splice(sourceItemIndex, 1);
+    if (destColIndex === -1) return;
 
-    if (destItemIndex === -1) {
-      updated[destColIndex].assignments.push(moved);
+    const next = board.map((c) => ({
+      ...c,
+      assignments: [...c.assignments],
+    }));
+
+    // Remove item from source
+    const sourceItemIndex = next[sourceColIndex].assignments.findIndex(
+      (a: IssueItem) => String(a.id) === activeId
+    );
+
+    const [moved] = next[sourceColIndex].assignments.splice(sourceItemIndex, 1);
+
+    // Drop on column → push at end
+    if (next[destColIndex].id === overId) {
+      next[destColIndex].assignments.push(moved);
     } else {
-      updated[destColIndex].assignments.splice(destItemIndex, 0, moved);
+      // Drop on item → insert before item
+      const destIndex = next[destColIndex].assignments.findIndex(
+        (a: IssueItem) => String(a.id) === overId
+      );
+
+      if (destIndex === -1) next[destColIndex].assignments.push(moved);
+      else next[destColIndex].assignments.splice(destIndex, 0, moved);
     }
 
-    setBoard(updated);
-    setActiveAssignmentId(null);
+    setBoard(next);
   };
 
+  /* ------------ Currently Dragging Card ---------- */
   const activeAssignment = activeAssignmentId
-    ? findColumnByAssignmentId(activeAssignmentId)?.assignments.find(
-        (a) => a.id === activeAssignmentId
-      )
+    ? board.flatMap((c) => c.assignments).find((a) => String(a.id) === activeAssignmentId) ?? null
     : null;
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p>Loading board...</p>
-      </div>
-    );
+    return <p className="text-center mt-10">Loading board...</p>;
   }
 
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
+      collisionDetection={rectIntersection}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
@@ -207,7 +216,7 @@ export default function DnDKitBoard() {
 
       <DragOverlay>
         {activeAssignment ? (
-          <div style={{ width: 280 }}>
+          <div style={{ width: 300 }}>
             <IssueCard assignment={activeAssignment} />
           </div>
         ) : null}
